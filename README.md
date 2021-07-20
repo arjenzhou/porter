@@ -1,10 +1,10 @@
 # Porter
 
+![workflow](https://github.com/arjenzhou/porter/actions/workflows/gradle.yml/badge.svg)
 ![GitHub all releases](https://img.shields.io/github/downloads/arjenzhou/porter/total)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/arjenzhou/porter)
-![GitHub contributors](https://img.shields.io/github/contributors/arjenzhou/porter)
 ![GitHub issues](https://img.shields.io/github/issues-raw/arjenzhou/porter)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/arjenzhou/porter)
+![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/arjenzhou/porter)
 
                             _____
     ________ ______ __________  /______ ________
