@@ -1,0 +1,3 @@
+mysql=de.xab.porter.transfer.jdbc.reader.MySQLReader
+mariadb=de.xab.porter.transfer.jdbc.reader.MariaDBReader
+clickhouse=de.xab.porter.transfer.jdbc.reader.ClickhouseReader

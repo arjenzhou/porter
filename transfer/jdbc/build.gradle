@@ -1,0 +1,17 @@
+plugins {
+    id 'java'
+}
+
+dependencies {
+    implementation project(':api')
+    implementation project(':common')
+    implementation project(':transfer')
+
+    implementation group: 'com.zaxxer', name: 'HikariCP', version: property('hikari')
+    implementation(group: 'ru.yandex.clickhouse', name: 'clickhouse-jdbc', version: property('clickhouse')) {
+        exclude(group: 'com.fasterxml.jackson.core')
+    }
+    implementation group: 'mysql', name: 'mysql-connector-java', version: property('mysql')
+    implementation group: 'org.mariadb.jdbc', name: 'mariadb-java-client', version: property('mariadb')
+    implementation group: 'org.postgresql', name: 'postgresql', version: property('postgresql')
+}

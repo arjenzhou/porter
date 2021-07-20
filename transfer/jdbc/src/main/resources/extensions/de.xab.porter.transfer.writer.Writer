@@ -1,0 +1,3 @@
+mysql=de.xab.porter.transfer.jdbc.writer.MySQLWriter
+clickhouse=de.xab.porter.transfer.jdbc.writer.ClickhouseWriter
+postgresql=de.xab.porter.transfer.jdbc.writer.PostgreSQLWriter

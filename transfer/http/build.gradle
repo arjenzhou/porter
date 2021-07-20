@@ -1,0 +1,16 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:' + property('jupiter')
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:' + property('jupiter')
+}
+
+test {
+    useJUnitPlatform()
+}

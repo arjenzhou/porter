@@ -1,0 +1,9 @@
+plugins {
+    id 'java'
+}
+
+dependencies {
+    implementation project(':api')
+
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: property('jackson')
+}

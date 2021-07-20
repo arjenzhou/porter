@@ -1,0 +1,25 @@
+plugins {
+    id 'java'
+}
+
+sourceCompatibility = JavaVersion.VERSION_11
+version project.property('porter-version')
+group 'de.0xab'
+
+allprojects {
+    repositories {
+        mavenCentral()
+        mavenLocal()
+    }
+}
+
+ext {
+    jupiter = '5.7.0'
+    h2 = '1.4.200'
+    jackson = '2.12.4'
+    hikari = '4.0.3'
+    clickhouse = '0.3.1-patch'
+    mysql = '8.0.25'
+    mariadb = '3.0.0-alpha'
+    postgresql = '42.2.23'
+}

@@ -1,0 +1,15 @@
+plugins {
+    id 'java'
+}
+
+dependencies {
+    implementation project(':core')
+    implementation project(':transfer:jdbc')
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:' + property('jupiter')
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:' + property('jupiter')
+}
+
+test {
+    useJUnitPlatform()
+}
