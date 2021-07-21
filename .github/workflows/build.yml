@@ -10,27 +10,39 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
-
+  unit-test:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up JDK 11
-      uses: actions/setup-java@v2
-      with:
-        java-version: '11'
-        distribution: 'adopt'
-    - name: Get gradlew
-      run: gradle wrapper
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-    - name: Test with Gradle
-      run: ./gradlew test
-    - name: codeCoverage report
-      run: ./gradlew codeCoverageReport
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v2
-      with:
-        token: ${{secrets.CODECOV_TOKEN}}
-        file: ./build/reports/jacoco/codeCoverageReport/codeCoverageReport.xml
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Get gradlew
+        run: gradle wrapper
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Test with Gradle
+        run: ./gradlew test
+
+  code-coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Get gradlew
+        run: gradle wrapper
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: codeCoverage report
+        run: ./gradlew codeCoverageReport
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          token: ${{secrets.CODECOV_TOKEN}}
+          file: ./build/reports/jacoco/codeCoverageReport/codeCoverageReport.xml

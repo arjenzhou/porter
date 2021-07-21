@@ -14,6 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * atomic unit of a transmission action, may split up by {@link Session}
+ */
 public class Task {
     private Context context;
     private Reader reader;
@@ -37,6 +40,9 @@ public class Task {
 //        return readers;
 //    }
 
+    /**
+     * construct relations among reader, writer and its channel, define the action when channel is ready to write
+     */
     public void register() {
         List<SinkConnection> sinkConnections = context.getSinkConnections();
         this.writers = sinkConnections.stream()
@@ -53,6 +59,9 @@ public class Task {
         registerProperties();
     }
 
+    /**
+     * init source behavior by sinks properties
+     */
     private void registerProperties() {
         SrcConnection srcConnection = context.getSrcConnection();
         SrcConnection.Properties srcConnectionProperties = srcConnection.getProperties();
@@ -62,6 +71,9 @@ public class Task {
                         .anyMatch(SinkConnection.Properties::isCreate));
     }
 
+    /**
+     * start a transmission task
+     */
     public void start() {
         Object dataSource = reader.getDataSource(context.getSrcConnection());
         Object connection = null;

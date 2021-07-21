@@ -6,7 +6,7 @@ import de.xab.porter.api.dataconnection.SrcConnection;
 import de.xab.porter.api.task.Context;
 import de.xab.porter.common.util.Loggers;
 import de.xab.porter.transfer.channel.Channel;
-import de.xab.porter.transfer.datasource.DataSource;
+import de.xab.porter.transfer.connection.Connectable;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,7 +15,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public abstract class AbstractReader implements Reader, DataSource {
+public abstract class AbstractReader implements Reader, Connectable {
     private final Logger logger = Loggers.getLogger(this.getClass());
     private String type;
     private List<Channel> channels;
@@ -44,8 +44,14 @@ public abstract class AbstractReader implements Reader, DataSource {
         return null;
     }
 
+    /**
+     * read data from source
+     */
     protected abstract void doRead(SrcConnection dataConnection, Object connection, Map<String, Column> columnMap);
 
+    /**
+     * read meta data of source
+     */
     protected abstract Map<String, Column> getTableMetaData(Context context, Object connection);
 
     @Override
@@ -73,6 +79,9 @@ public abstract class AbstractReader implements Reader, DataSource {
         this.type = type;
     }
 
+    /**
+     * add src conn properties by source's meta
+     */
     protected void initProperties(SrcConnection srcConnection, Map<String, Column> tableMeta) {
         SrcConnection.Properties properties = srcConnection.getProperties();
         if (properties.isTable()) {

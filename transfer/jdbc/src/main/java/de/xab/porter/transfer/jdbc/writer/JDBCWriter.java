@@ -67,6 +67,9 @@ public class JDBCWriter extends AbstractWriter implements JDBCDataSource {
         }
     }
 
+    /**
+     * write data with one insert SQL and multi rows
+     */
     protected void writeInValueMode(Connection connection, Relation relation, SinkConnection.Properties properties) {
         String tableIdentifier = properties.getTableIdentifier();
         StringBuilder sqlBuilder =
@@ -93,6 +96,9 @@ public class JDBCWriter extends AbstractWriter implements JDBCDataSource {
         }
     }
 
+    /**
+     * write data in batch
+     */
     protected void writeInStatementBatchMode(Connection connection, Relation relation,
                                              SinkConnection.Properties properties) {
         String tableIdentifier = properties.getTableIdentifier();
@@ -117,6 +123,9 @@ public class JDBCWriter extends AbstractWriter implements JDBCDataSource {
         }
     }
 
+    /**
+     * write data in batch with prepared statement
+     */
     protected void writeInPrepareBatchMode(Connection connection, Relation relation, SinkConnection.Properties properties) {
         String tableIdentifier = properties.getTableIdentifier();
         StringBuilder sqlBuilder =
@@ -144,6 +153,9 @@ public class JDBCWriter extends AbstractWriter implements JDBCDataSource {
         }
     }
 
+    /**
+     * write in default mode, each data source has its implements
+     */
     protected void writeInDefaultMode(SinkConnection sinkConnection, Connection jdbcConnection, Result<?> data) {
         writeInValueMode(jdbcConnection, (Relation) data.getResult(), sinkConnection.getProperties());
     }
@@ -170,6 +182,9 @@ public class JDBCWriter extends AbstractWriter implements JDBCDataSource {
         }
     }
 
+    /**
+     * generate create DDL
+     */
     protected String getCreateDDL(String tableIdentifier, String quote, List<Column> meta) {
         return getCreate(tableIdentifier) +
                 getColumns(meta, quote) +
@@ -177,6 +192,9 @@ public class JDBCWriter extends AbstractWriter implements JDBCDataSource {
                 getAfterDDL(tableIdentifier, quote, meta);
     }
 
+    /**
+     * generate column part of create DDL
+     */
     protected String getColumns(List<Column> meta, String quote) {
         return meta.stream()
                 .map(column ->
@@ -187,6 +205,9 @@ public class JDBCWriter extends AbstractWriter implements JDBCDataSource {
                 .collect(Collectors.joining(", \n"));
     }
 
+    /**
+     * generate constraints part of create DDL
+     */
     protected String getConstraints(Map<Short, String> primaryKeyMap) {
         if (primaryKeyMap != null && !primaryKeyMap.isEmpty()) {
             return ",\n\tPRIMARY KEY (" + String.join(", ", primaryKeyMap.values()) + ")\n)";
@@ -194,10 +215,16 @@ public class JDBCWriter extends AbstractWriter implements JDBCDataSource {
         return "\n)";
     }
 
+    /**
+     * generate additional part after create DDL, some data source may override it
+     */
     protected String getAfterDDL(String tableIdentifier, String quote, List<Column> meta) {
         return "";
     }
 
+    /**
+     * generate create header
+     */
     protected String getCreate(String tableIdentifier) {
         return String.format("CREATE TABLE IF NOT EXISTS %s (\n", tableIdentifier);
     }

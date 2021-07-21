@@ -1,4 +1,4 @@
-package de.xab.porter.demo.reader;
+package de.xab.porter.demo;
 
 import de.xab.porter.api.dataconnection.SinkConnection;
 import de.xab.porter.api.dataconnection.SrcConnection;
@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 
 import static de.xab.porter.api.dataconnection.SinkConnection.Properties.PREPARE_BATCH_MODE;
 
-public class ReaderTest {
+public class DemoTest {
     Logger logger = Logger.getLogger(this.getClass().getName());
 
     private void createH2Table(String table) {
@@ -48,22 +48,28 @@ public class ReaderTest {
         createH2Table(table);
         Session session = new Session();
         Context context = new Context();
-        SrcConnection srcConn = new SrcConnection();
-        srcConn.setType("demo");
-        srcConn.setUsername("");
-        srcConn.setPassword("");
-        srcConn.setSchema("PUBLIC");
-        srcConn.setTable(table);
 
-        SinkConnection sinkConnection = new SinkConnection();
-        sinkConnection.setType("demo");
-        sinkConnection.setUsername("");
-        sinkConnection.setPassword("");
-        sinkConnection.setSchema("PUBLIC");
-        sinkConnection.setTable(table + "_tmp");
-        sinkConnection.getProperties().setDrop(true);
-        sinkConnection.getProperties().setCreate(true);
-        sinkConnection.getProperties().setWriteMode(PREPARE_BATCH_MODE);
+        SrcConnection srcConn = ((SrcConnection.Builder) new SrcConnection.Builder()
+                .type("demo")
+                .username("")
+                .password("")
+                .schema("PUBLIC")
+                .table(table))
+                .build();
+
+        SinkConnection sinkConnection = ((SinkConnection.Builder) new SinkConnection.Builder()
+                .type("demo")
+                .username("")
+                .password("")
+                .schema("PUBLIC")
+                .table(table + "_tmp"))
+                .properties(
+                        SinkConnection.Properties.builder()
+                                .drop(true)
+                                .create(true)
+                                .writeMode(PREPARE_BATCH_MODE)
+                                .build())
+                .build();
 
         context.setSrcConnection(srcConn);
         context.setSinkConnections(List.of(sinkConnection));

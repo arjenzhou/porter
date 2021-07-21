@@ -3,7 +3,7 @@ package de.xab.porter.api;
 import java.sql.JDBCType;
 
 /**
- * A bean class describe the definition of table
+ * A entity class describe the definition of table
  */
 public class Column {
     // not null

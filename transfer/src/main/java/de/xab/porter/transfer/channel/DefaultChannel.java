@@ -1,13 +1,15 @@
-package de.xab.porter.transfer.jdbc.channel;
+package de.xab.porter.transfer.channel;
 
 import de.xab.porter.api.Result;
 import de.xab.porter.api.exception.PorterException;
-import de.xab.porter.transfer.channel.Channel;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Consumer;
 
+/**
+ * default channel
+ */
 public class DefaultChannel implements Channel {
     private final BlockingQueue<Result<?>> resultQueue = new LinkedBlockingQueue<>();
     private String type;

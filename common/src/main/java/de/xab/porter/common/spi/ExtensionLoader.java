@@ -17,6 +17,18 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static de.xab.porter.common.util.Strings.notNullOrEmpty;
 
+/**
+ * a extension loader can load any implements of one service, which is describe in resources/extensions
+ * ExtensionLoader load class using current class loader, construct new instance and inject type for consuming
+ * <p>
+ * extension must have these features:
+ * implement at least one service,
+ * registered in resources/extensions
+ * <p>
+ * any service must opens to module {@link de.xab.porter.common}
+ * <p>
+ * comments after # will be ignored
+ */
 public class ExtensionLoader {
     private static final String FOLDER = "extensions/";
     private static final Map<Class<?>, Map<String, Class<?>>> EXTENSION_HOLDER = new ConcurrentHashMap<>();
@@ -40,6 +52,13 @@ public class ExtensionLoader {
         }
     }
 
+    /**
+     * load Class of extensions. PorterException will be thrown as load failed
+     *
+     * @param type  exactly type of extension
+     * @param clazz Class of service
+     * @return Class of extension
+     */
     public Class<?> loadClass(String type, Class<?> clazz) {
         Class<?> subClass = EXTENSION_HOLDER.computeIfAbsent(clazz, ignored -> new ConcurrentHashMap<>()).get(type);
         if (subClass != null) {
@@ -92,7 +111,6 @@ public class ExtensionLoader {
                                         (String.format("no implement classes found in %s of class %s", fileName, clazz));
                             }
                         } catch (ClassNotFoundException e) {
-                            e.printStackTrace();
                             throw new PorterException(String.format("class %s not found", className), e);
                         }
                     }
@@ -104,6 +122,13 @@ public class ExtensionLoader {
         throw new PorterException(String.format("type `%s` of extension %s not found", type, clazz.getName()));
     }
 
+    /**
+     * whether extension defined in resources implemented service
+     *
+     * @param subClass       extension Class
+     * @param interfaceClass service Class
+     * @return true if extension if sub class of service
+     */
     private boolean implementedInterface(Class<?> subClass, Class<?> interfaceClass) {
         Class<?> currentClass = subClass;
         boolean isImplemented = false;

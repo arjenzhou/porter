@@ -139,12 +139,18 @@ public class JDBCReader extends AbstractReader implements JDBCDataSource {
         return columnMap;
     }
 
+    /**
+     * get JDBC statement, and set properties for it
+     */
     protected Statement getStatement(Connection jdbcConnection) throws SQLException {
         Statement statement = jdbcConnection.createStatement(TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
         statement.setFetchSize(DEFAULT_BATCH_SIZE);
         return statement;
     }
 
+    /**
+     * merge meta between read meta and read data
+     */
     private void fillResultSetMeta(Map<String, Column> columnMap, SrcConnection.Properties properties,
                                    ResultSetMetaData metaData, int columnCount) throws SQLException {
         for (int i = 1; i <= columnCount; i++) {

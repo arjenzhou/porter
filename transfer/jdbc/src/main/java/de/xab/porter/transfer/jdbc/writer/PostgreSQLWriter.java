@@ -29,6 +29,9 @@ public class PostgreSQLWriter extends JDBCWriter {
         writeInPostgreSQLFileMode(sinkConnection, jdbcConnection, data);
     }
 
+    /**
+     * using copy for postgreSQL
+     */
     protected void writeInPostgreSQLFileMode(SinkConnection sinkConnection, Connection jdbcConnection, Result<?> data) {
         SinkConnection.Properties properties = sinkConnection.getProperties();
         Relation relation = (Relation) data.getResult();

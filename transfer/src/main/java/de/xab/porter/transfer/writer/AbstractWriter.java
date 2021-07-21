@@ -3,18 +3,16 @@ package de.xab.porter.transfer.writer;
 import de.xab.porter.api.Result;
 import de.xab.porter.api.dataconnection.DataConnection;
 import de.xab.porter.api.dataconnection.SinkConnection;
-import de.xab.porter.common.enums.SequenceEnum;
 import de.xab.porter.common.util.Loggers;
 import de.xab.porter.transfer.channel.Channel;
-import de.xab.porter.transfer.datasource.DataSource;
+import de.xab.porter.transfer.connection.Connectable;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static de.xab.porter.common.enums.SequenceEnum.LAST_IS_EMPTY;
-import static de.xab.porter.common.enums.SequenceEnum.isLast;
+import static de.xab.porter.common.enums.SequenceEnum.*;
 
-public abstract class AbstractWriter implements Writer, DataSource {
+public abstract class AbstractWriter implements Writer, Connectable {
     private final Logger logger = Loggers.getLogger(this.getClass());
     private Channel channel;
     private String type;
@@ -28,7 +26,7 @@ public abstract class AbstractWriter implements Writer, DataSource {
                     getIdentifierQuote(connection) : properties.getQuote());
             properties.setTableIdentifier(getTableIdentifier(sinkConnection));
 
-            if (SequenceEnum.isFirst(data.getSequenceNum())) {
+            if (isFirst(data.getSequenceNum())) {
                 if (properties.isDrop()) {
                     logger.log(Level.FINE, String.format("dropping table %s %s...",
                             sinkConnection.getType(), sinkConnection.getUrl()));
@@ -53,17 +51,33 @@ public abstract class AbstractWriter implements Writer, DataSource {
         }
     }
 
+    /**
+     * get sink data source's table identifier
+     */
     protected String getTableIdentifier(SinkConnection sinkConnection) {
         String quote = sinkConnection.getProperties().getQuote();
         return quote + sinkConnection.getSchema() + quote + "." + quote + sinkConnection.getTable() + quote;
     }
 
+    /**
+     * get sink table column's identifier
+     */
     protected String getColumnIdentifier(String columnName, String quote) {
         return quote + columnName + quote;
     }
 
+    /**
+     * read keyword quote from data source
+     */
     protected abstract String getIdentifierQuote(Object connection);
 
+    /**
+     * write data to sink data source
+     *
+     * @param dataConnection connection properties of sink
+     * @param connection     connection of sink
+     * @param data           data to be write
+     */
     protected abstract void doWrite(DataConnection dataConnection, Object connection, Result<?> data);
 
     @Override

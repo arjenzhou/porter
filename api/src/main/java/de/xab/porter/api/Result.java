@@ -1,5 +1,10 @@
 package de.xab.porter.api;
 
+/**
+ * the outer data structure includes real data and its sequence number of batch
+ *
+ * @param <T> the type of data transferred
+ */
 public class Result<T> {
     private long sequenceNum;
     private T result;

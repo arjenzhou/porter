@@ -5,21 +5,20 @@ import com.zaxxer.hikari.HikariDataSource;
 import de.xab.porter.api.dataconnection.DataConnection;
 import de.xab.porter.api.exception.PorterException;
 import de.xab.porter.common.util.Loggers;
-import de.xab.porter.transfer.datasource.DataSource;
+import de.xab.porter.transfer.connection.Connectable;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static de.xab.porter.common.constant.Constant.*;
 
-public interface JDBCDataSource extends DataSource {
+public interface JDBCDataSource extends Connectable {
     Logger logger = Loggers.getLogger("de.xab.porter.transfer.jdbc.datasource.JDBCDataSource");
 
     @Override
-    default Connection connect(DataConnection dataConnection, Object dataSource) {
-        Connection connection;
+    default java.sql.Connection connect(DataConnection dataConnection, Object dataSource) {
+        java.sql.Connection connection;
         HikariDataSource hikariDataSource = (HikariDataSource) dataSource;
         try {
             logger.log(Level.INFO, String.format("connecting to %s %s...",
@@ -38,7 +37,7 @@ public interface JDBCDataSource extends DataSource {
         logger.log(Level.INFO, String.format("closing connection to %s...", hikariDataSource.getJdbcUrl()));
         try {
             if (connection != null && closed(connection)) {
-                ((Connection) connection).close();
+                ((java.sql.Connection) connection).close();
             }
             hikariDataSource.close();
         } catch (SQLException e) {
@@ -50,7 +49,7 @@ public interface JDBCDataSource extends DataSource {
     default boolean closed(Object connection) {
         boolean closed;
         try {
-            closed = ((Connection) connection).isClosed();
+            closed = ((java.sql.Connection) connection).isClosed();
         } catch (SQLException e) {
             throw new PorterException("JDBC connection close failed", e);
         }
@@ -78,6 +77,9 @@ public interface JDBCDataSource extends DataSource {
         return new HikariDataSource(hikariConfig);
     }
 
+    /**
+     * get JDBC url for JDBC connection
+     */
     default String getJDBCUrl(DataConnection dataConnection) {
         String schema = dataConnection.getCatalog() == null ? dataConnection.getSchema() : dataConnection.getCatalog();
         return String.format("jdbc:%s://%s/%s", getType(), dataConnection.getUrl(), schema);

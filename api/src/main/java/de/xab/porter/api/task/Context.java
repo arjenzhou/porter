@@ -5,6 +5,9 @@ import de.xab.porter.api.dataconnection.SrcConnection;
 
 import java.util.List;
 
+/**
+ * a context can live with a transmission task, which described how the task works
+ */
 public class Context {
     private SrcConnection srcConnection;
     private List<SinkConnection> sinkConnections;

@@ -3,7 +3,7 @@ package de.xab.porter.core;
 import de.xab.porter.api.task.Context;
 
 /**
- * one transmission task
+ * a session represent a transmission action was created
  */
 public class Session {
 
