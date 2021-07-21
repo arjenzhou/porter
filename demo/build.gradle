@@ -1,16 +1,6 @@
-plugins {
-    id 'java'
-}
-
 dependencies {
     implementation project(':core')
     implementation project(':transfer:jdbc')
 
     implementation group: 'com.h2database', name: 'h2', version: property('h2')
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:' + property('jupiter')
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:' + property('jupiter')
-}
-
-test {
-    useJUnitPlatform()
 }

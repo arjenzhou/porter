@@ -1,17 +1,5 @@
-plugins {
-    id 'java'
-}
-
-sourceCompatibility = JavaVersion.VERSION_11
-version project.property('porter-version')
 group 'de.0xab'
-
-allprojects {
-    repositories {
-        mavenCentral()
-        mavenLocal()
-    }
-}
+version project.property('porter-version')
 
 ext {
     jupiter = '5.7.0'
@@ -22,4 +10,62 @@ ext {
     mysql = '8.0.25'
     mariadb = '3.0.0-alpha'
     postgresql = '42.2.23'
+}
+
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        google()
+    }
+}
+
+allprojects {
+    apply plugin: 'java'
+    apply plugin: 'maven-publish'
+    apply plugin: 'jacoco'
+
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        google()
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:' + property('jupiter')
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:' + property('jupiter')
+}
+
+subprojects {
+    dependencies {
+        testImplementation 'org.junit.jupiter:junit-jupiter-api:' + property('jupiter')
+        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:' + property('jupiter')
+    }
+    test.useJUnitPlatform()
+}
+
+task codeCoverageReport(type: JacocoReport) {
+    executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
+
+    subprojects.each {
+        sourceSets it.sourceSets.main
+    }
+
+    reports {
+        xml.enabled true
+        html.enabled false
+        csv.enabled false
+    }
+}
+
+codeCoverageReport.dependsOn {
+    subprojects*.test
 }

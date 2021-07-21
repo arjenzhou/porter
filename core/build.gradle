@@ -7,11 +7,4 @@ dependencies {
     api project(':transfer')
     implementation project(':common')
     implementation project(':transfer:jdbc')
-
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:' + property('jupiter')
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:' + property('jupiter')
-}
-
-test {
-    useJUnitPlatform()
 }

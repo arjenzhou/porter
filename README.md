@@ -1,10 +1,11 @@
 # Porter
 
-![workflow](https://github.com/arjenzhou/porter/actions/workflows/gradle.yml/badge.svg)
-![GitHub all releases](https://img.shields.io/github/downloads/arjenzhou/porter/total)
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/arjenzhou/porter)
+![workflow](https://github.com/arjenzhou/porter/actions/workflows/build.yml/badge.svg)
+[![codecov](https://codecov.io/gh/arjenzhou/porter/branch/master/graph/badge.svg?token=WMRO0TVZMG)](https://codecov.io/gh/arjenzhou/porter)
 ![GitHub issues](https://img.shields.io/github/issues-raw/arjenzhou/porter)
 ![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/arjenzhou/porter)
+![GitHub all releases](https://img.shields.io/github/downloads/arjenzhou/porter/total)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/arjenzhou/porter)
 
                             _____
     ________ ______ __________  /______ ________
@@ -23,9 +24,9 @@ Porter is an open-source, universal data-transmission framework.
 
 ## Getting Started
 
-Porter runs on Java 11 or above, you may install appropriate JDK before start.
+Porter runs on Java 11 or above, you may install appropriate JDK before starting.
 
-There is a Demo Reader extension in [demo module](./demo/src). Before extending, you can check it in advance.
+There is a demo Reader extension in [demo module](./demo/src). You can check it in advance.
 
 ## Contributing
 
