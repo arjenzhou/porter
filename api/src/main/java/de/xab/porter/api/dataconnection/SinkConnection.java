@@ -1,9 +1,10 @@
 package de.xab.porter.api.dataconnection;
 
 /**
- * connection message of sink datasource, inner class {@link Properties} describe the behavior how sink table was handled
+ * connection message of sink datasource,
+ * inner class {@link Properties} describe the behavior how sink table was handled.
  */
-public class SinkConnection extends DataConnection {
+public final class SinkConnection extends DataConnection {
     private Properties properties = new Properties();
 
     //constructors
@@ -19,7 +20,10 @@ public class SinkConnection extends DataConnection {
         return properties;
     }
 
-    public static final class Builder extends DataConnection.Builder<SinkConnection> {
+    /**
+     * builder
+     */
+    public static final class Builder extends AbstractBuilder<SinkConnection> {
         private Properties properties;
 
         public Builder properties(Properties properties) {
@@ -33,8 +37,10 @@ public class SinkConnection extends DataConnection {
         }
     }
 
-    //inner class
-    public static class Properties {
+    /**
+     * properties inner class
+     */
+    public static final class Properties {
         public static final String PREPARE_BATCH_MODE = "PREPARE_BATCH";
         public static final String STATEMENT_BATCH_MODE = "STATEMENT_BATCH";
         public static final String STATEMENT_VALUES_MODE = "STATEMENT_VALUES";
@@ -43,8 +49,8 @@ public class SinkConnection extends DataConnection {
         private boolean allColumns = true;
         private String quote;
         private String tableIdentifier;
-        private boolean create = false;
-        private boolean drop = false;
+        private boolean create;
+        private boolean drop;
 
         private Properties(Builder builder) {
             writeMode = builder.writeMode;
@@ -107,7 +113,10 @@ public class SinkConnection extends DataConnection {
             return drop;
         }
 
-        public static class Builder {
+        /**
+         * properties builder
+         */
+        public static final class Builder {
             private String writeMode;
             private boolean allColumns;
             private String quote;

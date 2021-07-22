@@ -1,10 +1,10 @@
 package de.xab.porter.api.dataconnection;
 
 /**
- * connection message of source datasource, inner class {@link Properties} describe the behavior how data was read from
- * source table
+ * connection message of source datasource,
+ * inner class {@link Properties} describe the behavior how data was read from source table.
  */
-public class SrcConnection extends DataConnection {
+public final class SrcConnection extends DataConnection {
     private Properties properties = new Properties();
 
     //constructors
@@ -25,7 +25,10 @@ public class SrcConnection extends DataConnection {
         this.properties = properties;
     }
 
-    public static final class Builder extends DataConnection.Builder<SrcConnection> {
+    /**
+     * builder
+     */
+    public static final class Builder extends AbstractBuilder<SrcConnection> {
         private Properties properties;
 
         public Builder properties(Properties properties) {
@@ -39,8 +42,10 @@ public class SrcConnection extends DataConnection {
         }
     }
 
-    //inner class
-    public static class Properties {
+    /**
+     * properties inner class
+     */
+    public static final class Properties {
         private String sql;
         private boolean table = true;
         private boolean create;
@@ -78,7 +83,10 @@ public class SrcConnection extends DataConnection {
             this.create = create;
         }
 
-        public static class Builder {
+        /**
+         * properties builder
+         */
+        public static final class Builder {
             private String sql;
             private boolean table;
             private boolean create;

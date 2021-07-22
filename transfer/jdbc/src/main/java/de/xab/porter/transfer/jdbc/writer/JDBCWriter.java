@@ -8,7 +8,7 @@ import de.xab.porter.api.dataconnection.SinkConnection;
 import de.xab.porter.api.exception.PorterException;
 import de.xab.porter.common.util.Jsons;
 import de.xab.porter.common.util.Loggers;
-import de.xab.porter.transfer.jdbc.datasource.JDBCDataSource;
+import de.xab.porter.transfer.jdbc.datasource.JDBCConnector;
 import de.xab.porter.transfer.writer.AbstractWriter;
 
 import java.sql.*;
@@ -23,7 +23,10 @@ import java.util.stream.Collectors;
 import static de.xab.porter.api.dataconnection.SinkConnection.Properties.*;
 import static de.xab.porter.common.util.Strings.notNullOrEmpty;
 
-public class JDBCWriter extends AbstractWriter implements JDBCDataSource {
+/**
+ * common JDBC writer
+ */
+public class JDBCWriter extends AbstractWriter implements JDBCConnector {
     private final Logger logger = Loggers.getLogger(this.getClass());
 
     @Override
@@ -48,7 +51,7 @@ public class JDBCWriter extends AbstractWriter implements JDBCDataSource {
 
     @Override
     protected void doWrite(DataConnection dataConnection, Object connection, Result<?> data) {
-        Relation relation = ((Relation) data.getResult());
+        Relation relation = (Relation) data.getResult();
         SinkConnection sinkConnection = (SinkConnection) dataConnection;
         SinkConnection.Properties properties = sinkConnection.getProperties();
         Connection jdbcConnection = (Connection) connection;
@@ -75,16 +78,16 @@ public class JDBCWriter extends AbstractWriter implements JDBCDataSource {
         StringBuilder sqlBuilder =
                 new StringBuilder(String.format("INSERT INTO %s \n", tableIdentifier));
         if (!properties.isAllColumns()) {
-            sqlBuilder.append("(").append(relation.getMeta().stream()
-                    .map(column -> getColumnIdentifier(column.getName(), properties.getQuote()))
-                    .collect(Collectors.joining(", "))).append(")");
+            sqlBuilder.append("(").append(relation.getMeta().stream().
+                    map(column -> getColumnIdentifier(column.getName(), properties.getQuote())).
+                    collect(Collectors.joining(", "))).append(")");
         }
         sqlBuilder.append("VALUES\n");
-        sqlBuilder.append(relation.getData().stream()
-                .map(row -> "(" + row.stream()
-                        .map(Object::toString)
-                        .collect(Collectors.joining(", ")) + ")")
-                .collect(Collectors.joining(", \n")));
+        sqlBuilder.append(relation.getData().stream().
+                map(row -> "(" + row.stream().
+                        map(Object::toString).
+                        collect(Collectors.joining(", ")) + ")").
+                collect(Collectors.joining(", \n")));
         try (Statement stmt = connection.createStatement()) {
             //DO NOT DEPEND ON THIS
             //returned by JDBC client, may not accurate
@@ -105,9 +108,9 @@ public class JDBCWriter extends AbstractWriter implements JDBCDataSource {
         StringBuilder sqlBuilder =
                 new StringBuilder(String.format("INSERT INTO %s ", tableIdentifier));
         if (!properties.isAllColumns()) {
-            sqlBuilder.append("(").append(relation.getMeta().stream()
-                    .map(column -> getColumnIdentifier(column.getName(), properties.getQuote()))
-                    .collect(Collectors.joining(", "))).append(")");
+            sqlBuilder.append("(").append(relation.getMeta().stream().
+                    map(column -> getColumnIdentifier(column.getName(), properties.getQuote())).
+                    collect(Collectors.joining(", "))).append(")");
         }
         String prefix = sqlBuilder.append("VALUES(").toString();
         try (Statement statement = connection.createStatement()) {
@@ -126,17 +129,20 @@ public class JDBCWriter extends AbstractWriter implements JDBCDataSource {
     /**
      * write data in batch with prepared statement
      */
-    protected void writeInPrepareBatchMode(Connection connection, Relation relation, SinkConnection.Properties properties) {
+    protected void writeInPrepareBatchMode(Connection connection, Relation relation,
+                                           SinkConnection.Properties properties) {
         String tableIdentifier = properties.getTableIdentifier();
         StringBuilder sqlBuilder =
                 new StringBuilder(String.format("INSERT INTO %s \n", tableIdentifier));
         if (!properties.isAllColumns()) {
-            sqlBuilder.append("(").append(relation.getMeta().stream()
-                    .map(column -> getColumnIdentifier(column.getName(), properties.getQuote()))
-                    .collect(Collectors.joining(", "))).append(")\n");
+            sqlBuilder.append("(").append(relation.getMeta().stream().
+                    map(column -> getColumnIdentifier(column.getName(), properties.getQuote())).
+                    collect(Collectors.joining(", "))).append(")\n");
         }
         sqlBuilder.append("VALUES\n");
-        sqlBuilder.append("(").append(relation.getMeta().stream().map(row -> "?").collect(Collectors.joining(", "))).append(")");
+        sqlBuilder.append("(").append(
+                relation.getMeta().stream().map(row -> "?").collect(Collectors.joining(", "))).
+                append(")");
         try (PreparedStatement statement = connection.prepareStatement(sqlBuilder.toString())) {
             for (List<?> row : relation.getData()) {
                 for (int i = 0; i < row.size(); i++) {
@@ -186,23 +192,26 @@ public class JDBCWriter extends AbstractWriter implements JDBCDataSource {
      * generate create DDL
      */
     protected String getCreateDDL(String tableIdentifier, String quote, List<Column> meta) {
-        return getCreate(tableIdentifier) +
-                getColumns(meta, quote) +
-                getConstraints(sortPrimaryKey(meta, quote)) +
-                getAfterDDL(tableIdentifier, quote, meta);
+        return getCreate(tableIdentifier)
+                + getColumns(meta, quote)
+                + getConstraints(sortPrimaryKey(meta, quote))
+                + getAfterDDL(tableIdentifier, quote, meta);
     }
 
     /**
      * generate column part of create DDL
      */
     protected String getColumns(List<Column> meta, String quote) {
-        return meta.stream()
-                .map(column ->
-                        "\t" + getColumnIdentifier(column.getName(), quote) +
-                                "\t" + getColumnType(column) +
-                                "\t" + ((notNullOrEmpty(column.getNullable()) && "NO".equals(column.getNullable())) ? "NOT NULL" : "NULL") +
-                                (notNullOrEmpty(column.getComment()) ? ("\tCOMMENT\t'" + column.getComment() + "'") : ""))
-                .collect(Collectors.joining(", \n"));
+        return meta.stream().
+                map(column ->
+                        "\t" + getColumnIdentifier(column.getName(), quote)
+                                + "\t" + getColumnType(column)
+                                + "\t"
+                                + ((notNullOrEmpty(column.getNullable()) && "NO".equals(column.getNullable()))
+                                ? "NOT NULL" : "NULL")
+                                + (notNullOrEmpty(column.getComment())
+                                ? ("\tCOMMENT\t'" + column.getComment() + "'") : "")).
+                collect(Collectors.joining(", \n"));
     }
 
     /**

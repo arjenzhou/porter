@@ -2,6 +2,9 @@ package de.xab.porter.transfer.jdbc.reader;
 
 import de.xab.porter.api.dataconnection.DataConnection;
 
+/**
+ * mysql JDBC reader
+ */
 public class MySQLReader extends JDBCReader {
     @Override
     public String getJDBCUrl(DataConnection dataConnection) {

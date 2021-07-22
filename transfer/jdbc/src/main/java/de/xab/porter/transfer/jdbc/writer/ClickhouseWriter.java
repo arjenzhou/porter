@@ -7,7 +7,9 @@ import de.xab.porter.api.dataconnection.SinkConnection;
 import java.sql.Connection;
 import java.util.Map;
 
-
+/**
+ * clickhouse JDBC writer
+ */
 public class ClickhouseWriter extends JDBCWriter {
 
     /**
@@ -29,6 +31,6 @@ public class ClickhouseWriter extends JDBCWriter {
 
     @Override
     protected void writeInDefaultMode(SinkConnection sinkConnection, Connection jdbcConnection, Result<?> data) {
-        writeInPrepareBatchMode(jdbcConnection, ((Relation) data.getResult()), sinkConnection.getProperties());
+        writeInPrepareBatchMode(jdbcConnection, (Relation) data.getResult(), sinkConnection.getProperties());
     }
 }

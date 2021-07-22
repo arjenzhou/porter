@@ -6,9 +6,9 @@ import java.util.List;
 /**
  * a table's structure and its partial data, equivalent to query ResultSet.
  */
-public class Relation {
-    List<Column> meta;
-    List<List<?>> data;
+public final class Relation {
+    private List<Column> meta;
+    private List<List<?>> data;
 
     public Relation(List<Column> meta) {
         this.meta = meta;

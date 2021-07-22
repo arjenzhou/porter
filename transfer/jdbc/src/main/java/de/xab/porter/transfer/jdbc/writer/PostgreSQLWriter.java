@@ -21,8 +21,11 @@ import java.util.stream.Collectors;
 
 import static de.xab.porter.common.util.Strings.notNullOrEmpty;
 
+/**
+ * PostgreSQL JDBC writer
+ */
 public class PostgreSQLWriter extends JDBCWriter {
-    Logger logger = Loggers.getLogger(this.getClass());
+    private Logger logger = Loggers.getLogger(this.getClass());
 
     @Override
     protected void writeInDefaultMode(SinkConnection sinkConnection, Connection jdbcConnection, Result<?> data) {
@@ -38,19 +41,19 @@ public class PostgreSQLWriter extends JDBCWriter {
         StringReader stringReader = null;
         String columns = "";
         if (!properties.isAllColumns()) {
-            columns = relation.getMeta().stream()
-                    .map(col -> getColumnIdentifier(col.getName(), properties.getQuote()))
-                    .collect(Collectors.joining(", "));
+            columns = relation.getMeta().stream().
+                    map(col -> getColumnIdentifier(col.getName(), properties.getQuote())).
+                    collect(Collectors.joining(", "));
         }
         String tableIdentifier = properties.getTableIdentifier();
         String copySQL = String.format("COPY %s %s FROM STDIN WITH DELIMITER '|'", tableIdentifier, columns);
         try {
             BaseConnection pgConnection = jdbcConnection.unwrap(BaseConnection.class);
             CopyManager copyManager = new CopyManager(pgConnection);
-            String csv = relation.getData().stream()
-                    .map(row -> row.stream()
-                            .map(Object::toString).collect(Collectors.joining("|")))
-                    .collect(Collectors.joining("\n"));
+            String csv = relation.getData().stream().
+                    map(row -> row.stream().
+                            map(Object::toString).collect(Collectors.joining("|"))).
+                    collect(Collectors.joining("\n"));
             stringReader = new StringReader(csv);
             long rowCount = copyManager.copyIn(copySQL, new BufferedReader(stringReader));
             logger.log(Level.INFO, String.format("wrote %d rows to table %s", rowCount, tableIdentifier));
@@ -70,29 +73,30 @@ public class PostgreSQLWriter extends JDBCWriter {
 
     @Override
     protected String getColumns(List<Column> meta, String quote) {
-        return meta.stream()
-                .map(column ->
-                        "\t" + getColumnIdentifier(column.getName(), quote) +
-                                "\t" + getColumnType(column) +
-                                "\t" + ((notNullOrEmpty(column.getNullable()) && "NO".equals(column.getNullable())) ? "NOT NULL" : "NULL"))
-                .collect(Collectors.joining(", \n"));
+        return meta.stream().
+                map(column ->
+                        "\t" + getColumnIdentifier(column.getName(), quote)
+                                + "\t" + getColumnType(column)
+                                + "\t" + ((notNullOrEmpty(column.getNullable()) && "NO".equals(column.getNullable()))
+                                ? "NOT NULL" : "NULL")).
+                collect(Collectors.joining(", \n"));
     }
 
     @Override
     protected String getAfterDDL(String tableIdentifier, String quote, List<Column> meta) {
-        return meta.stream()
-                .map(column -> notNullOrEmpty(column.getComment()) ?
-                        ";\nCOMMENT ON COLUMN " + tableIdentifier + "." + quote + column.getName() + quote +
-                                " IS '" + column.getComment() + "'" : "")
-                .collect(Collectors.joining()) + ";";
+        return meta.stream().
+                map(column -> notNullOrEmpty(column.getComment())
+                        ? ";\nCOMMENT ON COLUMN " + tableIdentifier + "." + quote + column.getName() + quote
+                        + " IS '" + column.getComment() + "'" : "").
+                collect(Collectors.joining()) + ";";
     }
 
     @Override
     protected String getTableIdentifier(SinkConnection sinkConnection) {
         String quote = sinkConnection.getProperties().getQuote();
-        return quote + sinkConnection.getCatalog() + quote + "." +
-                quote + sinkConnection.getSchema() + quote + "." +
-                quote + sinkConnection.getTable() + quote;
+        return quote + sinkConnection.getCatalog() + quote + "."
+                + quote + sinkConnection.getSchema() + quote + "."
+                + quote + sinkConnection.getTable() + quote;
     }
 
     @Override

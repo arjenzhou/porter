@@ -6,10 +6,13 @@ import de.xab.porter.common.service.UnregisteredService;
 import de.xab.porter.common.spi.ExtensionLoader;
 import org.junit.jupiter.api.Test;
 
+/**
+ * test class for porter SPI
+ */
 public class SPITest {
     @Test
     public void testExists() {
-        MockService impl = ExtensionLoader.getExtensionLoader().loadExtension("impl", MockService.class);
+        final MockService impl = ExtensionLoader.getExtensionLoader().loadExtension("impl", MockService.class);
         assert "hello world".equals(impl.mock());
     }
 
@@ -17,7 +20,7 @@ public class SPITest {
     public void testNotExists() {
         try {
             ExtensionLoader.getExtensionLoader().loadExtension("none", MockService.class);
-        } catch (Exception e) {
+        } catch (PorterException e) {
             assert e.getCause() instanceof ClassNotFoundException;
         }
     }
@@ -26,7 +29,7 @@ public class SPITest {
     public void testTypoImpl() {
         try {
             ExtensionLoader.getExtensionLoader().loadExtension("typo", MockService.class);
-        } catch (Exception e) {
+        } catch (PorterException e) {
             assert e.getCause() instanceof ClassNotFoundException;
         }
     }
@@ -35,7 +38,7 @@ public class SPITest {
     public void testNoImplemented() {
         try {
             ExtensionLoader.getExtensionLoader().loadExtension("noimpl", MockService.class);
-        } catch (Exception e) {
+        } catch (PorterException e) {
             assert e.getCause() instanceof ClassNotFoundException;
         }
     }
@@ -44,7 +47,7 @@ public class SPITest {
     public void testNoneRegistered() {
         try {
             ExtensionLoader.getExtensionLoader().loadExtension("any", UnregisteredService.class);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             assert e instanceof PorterException;
         }
     }

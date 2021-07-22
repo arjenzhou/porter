@@ -7,6 +7,9 @@ import de.xab.porter.transfer.connection.Connectable;
 
 import java.util.List;
 
+/**
+ * a reader can read data from data source
+ */
 public interface Reader extends Connectable {
     /**
      * split source table into pieces
@@ -16,7 +19,7 @@ public interface Reader extends Connectable {
     /**
      * read data from reader
      */
-    void read(Object Connection, Context context);
+    void read(Object connection, Context context);
 
     /**
      * push data to channels registered to
