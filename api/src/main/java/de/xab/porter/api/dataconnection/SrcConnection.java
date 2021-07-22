@@ -5,7 +5,7 @@ package de.xab.porter.api.dataconnection;
  * inner class {@link Properties} describe the behavior how data was read from source table.
  */
 public final class SrcConnection extends DataConnection {
-    private Properties properties = new Properties();
+    private Properties properties;
 
     //constructors
     public SrcConnection() {
@@ -14,6 +14,7 @@ public final class SrcConnection extends DataConnection {
 
     protected SrcConnection(Builder builder) {
         super(builder);
+        this.properties = builder.properties == null ? new Properties() : builder.properties;
     }
 
     //getter and setter
