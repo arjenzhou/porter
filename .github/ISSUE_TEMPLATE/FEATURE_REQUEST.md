@@ -1,6 +1,6 @@
 ---
-name: Feature about: Suggest an idea for this project
-
+name: Feature 
+about: Suggest an idea for this project
 ---
 
 ### 1. Describe the feature
