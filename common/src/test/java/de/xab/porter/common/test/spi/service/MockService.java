@@ -1,4 +1,4 @@
-package de.xab.porter.common.service;
+package de.xab.porter.common.test.spi.service;
 
 /**
  * mock service

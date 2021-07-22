@@ -1,4 +1,0 @@
-impl=de.xab.porter.common.service.MockServiceImpl # successfully load
-nosuch=de.xab.porter.common.service.NoSuchServiceImpl # no such implement
-typo=de.xab.porter.common.service.TypeServiceImpl # typo implement selected
-noimpl=de.xab.porter.common.service.NoImplServiceImpl # typo implement selected

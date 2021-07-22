@@ -8,7 +8,7 @@ import de.xab.porter.api.dataconnection.SinkConnection;
 import de.xab.porter.api.exception.PorterException;
 import de.xab.porter.common.util.Jsons;
 import de.xab.porter.common.util.Loggers;
-import de.xab.porter.transfer.jdbc.datasource.JDBCConnector;
+import de.xab.porter.transfer.jdbc.connection.JDBCConnector;
 import de.xab.porter.transfer.writer.AbstractWriter;
 
 import java.sql.*;

@@ -23,11 +23,11 @@ apply plugin: 'checkstyle'
 checkstyle {
     // The version of the code quality tool to be used.
     // The most recent version of Checkstyle can be found at https://github.com/checkstyle/checkstyle/releases
-    toolVersion = project.property('checkstyle-version')
+    toolVersion = rootProject.ext.checkstylePlugin
 
     // The source sets to be analyzed as part of the check and build tasks.
     // Use 'sourceSets = []' to remove Checkstyle from the check and build tasks.
-//    sourceSets = [project.sourceSets.main, project.sourceSets.test]
+    // sourceSets = [project.sourceSets.main, project.sourceSets.test]
 
     // Whether or not to allow the build to continue if there are warnings.
     ignoreFailures = false

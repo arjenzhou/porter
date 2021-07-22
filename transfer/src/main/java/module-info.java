@@ -7,4 +7,6 @@ module de.xab.porter.transfer {
     exports de.xab.porter.transfer.channel;
     exports de.xab.porter.transfer.reader;
     exports de.xab.porter.transfer.writer;
+
+    opens de.xab.porter.transfer.channel to de.xab.porter.common;
 }

@@ -132,7 +132,7 @@
         <module name="RedundantModifier"/>
         <!--Naming Conventions-->
         <module name="AbbreviationAsWordInName">
-            <property name="allowedAbbreviations" value="XML,URL,JDBC"/>
+            <property name="allowedAbbreviations" value="XML,URL,JDBC,JSON"/>
         </module>
         <module name="AbstractClassName"/>
         <module name="CatchParameterName"/>

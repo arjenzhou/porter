@@ -1,9 +1,10 @@
-package de.xab.porter.demo;
+package de.xab.porter.demo.test;
 
 import de.xab.porter.api.dataconnection.SinkConnection;
 import de.xab.porter.api.dataconnection.SrcConnection;
 import de.xab.porter.api.task.Context;
 import de.xab.porter.core.Session;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.sql.*;
@@ -21,9 +22,11 @@ public class DemoTest {
     private final String url = "jdbc:h2:~/porter";
     private final String type = "demo";
     private final String schema = "PUBLIC";
+    private final String table = "mock_table";
     private Logger logger = Logger.getLogger(this.getClass().getName());
 
-    private void createH2Table(String table) {
+    @BeforeEach
+    private void createH2Table() {
         final String drop = "DROP TABLE IF EXISTS " + table;
 
         final String ddl = "CREATE TABLE " + table
@@ -52,12 +55,10 @@ public class DemoTest {
 
     @Test
     public void testNewReader() {
-        final String table = "mock_table";
-        createH2Table(table);
-        final Session session = new Session();
-        final Context context = new Context();
+        Session session = new Session();
+        Context context = new Context();
 
-        final SrcConnection srcConn = ((SrcConnection.Builder) new SrcConnection.Builder().
+        SrcConnection srcConn = ((SrcConnection.Builder) new SrcConnection.Builder().
                 type(type).
                 username("").
                 password("").
@@ -65,7 +66,7 @@ public class DemoTest {
                 table(table)).
                 build();
 
-        final SinkConnection sinkConnection = ((SinkConnection.Builder) new SinkConnection.Builder().
+        SinkConnection sinkConnection = ((SinkConnection.Builder) new SinkConnection.Builder().
                 type(type).
                 username("").
                 password("").
@@ -75,6 +76,7 @@ public class DemoTest {
                         SinkConnection.Properties.builder().
                                 drop(true).
                                 create(true).
+                                allColumns(false).
                                 writeMode(PREPARE_BATCH_MODE).
                                 build()).
                 build();

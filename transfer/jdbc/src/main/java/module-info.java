@@ -9,5 +9,5 @@ module de.xab.porter.transfer.jdbc {
     opens de.xab.porter.transfer.jdbc.writer to de.xab.porter.common;
     exports de.xab.porter.transfer.jdbc.reader;
     exports de.xab.porter.transfer.jdbc.writer;
-    exports de.xab.porter.transfer.jdbc.datasource;
+    exports de.xab.porter.transfer.jdbc.connection;
 }

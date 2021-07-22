@@ -2,6 +2,7 @@ package de.xab.porter.common.util;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.xab.porter.api.exception.PorterException;
 
@@ -26,6 +27,14 @@ public final class Jsons {
             throw new PorterException("json deserialization failed", e);
         }
         return t;
+    }
+
+    public static <T> T fromJson(String content, TypeReference<T> type) {
+        try {
+            return MAPPER.readValue(content, type);
+        } catch (JsonProcessingException e) {
+            throw new PorterException("json deserialization failed", e);
+        }
     }
 
     public static String toJson(Object obj) {

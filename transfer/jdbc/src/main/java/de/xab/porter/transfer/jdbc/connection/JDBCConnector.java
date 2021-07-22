@@ -1,4 +1,4 @@
-package de.xab.porter.transfer.jdbc.datasource;
+package de.xab.porter.transfer.jdbc.connection;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;

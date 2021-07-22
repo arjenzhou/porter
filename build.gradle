@@ -2,9 +2,13 @@ group 'de.0xab'
 version project.property('porter-version')
 
 ext {
+    //plugin version
+    checkstylePlugin = '8.9'
+    //test dependencies version
     jupiter = '5.7.0'
+    mockito = '3.11.2'
     h2 = '1.4.200'
-
+    //dependencies version
     jackson = '2.12.4'
     hikari = '4.0.3'
     clickhouse = '0.3.1-patch'
@@ -21,8 +25,6 @@ buildscript {
     }
 }
 
-
-//apply from: rootDir.path + '/gradle/checkstyle.gradle'
 allprojects {
     apply plugin: 'java'
     apply plugin: 'jacoco'
@@ -30,7 +32,6 @@ allprojects {
 
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
-
     repositories {
         mavenLocal()
         mavenCentral()
@@ -45,6 +46,7 @@ repositories {
 subprojects {
     dependencies {
         testImplementation 'org.junit.jupiter:junit-jupiter-api:' + property('jupiter')
+        testImplementation 'org.mockito:mockito-core:' + property('mockito')
         testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:' + property('jupiter')
     }
     test.useJUnitPlatform()
