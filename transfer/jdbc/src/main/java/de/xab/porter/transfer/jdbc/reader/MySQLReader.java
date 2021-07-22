@@ -6,9 +6,12 @@ import de.xab.porter.api.dataconnection.DataConnection;
  * mysql JDBC reader
  */
 public class MySQLReader extends JDBCReader {
-    @Override
-    public String getJDBCUrl(DataConnection dataConnection) {
-        String schema = dataConnection.getCatalog() == null ? dataConnection.getSchema() : dataConnection.getCatalog();
-        return String.format("jdbc:%s://%s/%s?useCursorFetch=true", getType(), dataConnection.getUrl(), schema);
-    }
+  @Override
+  public String getJDBCUrl(DataConnection dataConnection) {
+    String schema = dataConnection.getCatalog() == null
+                        ? dataConnection.getSchema()
+                        : dataConnection.getCatalog();
+    return String.format("jdbc:%s://%s/%s?useCursorFetch=true", getType(),
+                         dataConnection.getUrl(), schema);
+  }
 }

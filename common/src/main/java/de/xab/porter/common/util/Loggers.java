@@ -8,17 +8,17 @@ import java.util.logging.Logger;
  * logger utils
  */
 public final class Loggers {
-    private static final Map<String, Logger> LOGGER_HOLDER = new HashMap<>();
+  private static final Map<String, Logger> LOGGER_HOLDER = new HashMap<>();
 
-    private Loggers() {
-    }
+  private Loggers() {}
 
-    public static Logger getLogger(String name) {
-        return LOGGER_HOLDER.computeIfAbsent(name, logger -> Logger.getLogger(name));
-    }
+  public static Logger getLogger(String name) {
+    return LOGGER_HOLDER.computeIfAbsent(name,
+                                         logger -> Logger.getLogger(name));
+  }
 
-    public static Logger getLogger(Class<?> clazz) {
-        final String name = clazz.getName();
-        return getLogger(name);
-    }
+  public static Logger getLogger(Class<?> clazz) {
+    final String name = clazz.getName();
+    return getLogger(name);
+  }
 }

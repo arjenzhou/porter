@@ -9,32 +9,29 @@ import de.xab.porter.api.exception.PorterException;
  * json utils
  */
 public final class Jsons {
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+  private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    static {
-        MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-    }
+  static { MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL); }
 
-    private Jsons() {
-    }
+  private Jsons() {}
 
-    public static <T> T fromJson(String content, Class<T> clazz) {
-        final T t;
-        try {
-            t = MAPPER.readValue(content, clazz);
-        } catch (JsonProcessingException e) {
-            throw new PorterException("json deserialization failed", e);
-        }
-        return t;
+  public static <T> T fromJson(String content, Class<T> clazz) {
+    final T t;
+    try {
+      t = MAPPER.readValue(content, clazz);
+    } catch (JsonProcessingException e) {
+      throw new PorterException("json deserialization failed", e);
     }
+    return t;
+  }
 
-    public static String toJson(Object obj) {
-        final String json;
-        try {
-            json = MAPPER.writeValueAsString(obj);
-        } catch (JsonProcessingException e) {
-            throw new PorterException("json serialization failed", e);
-        }
-        return json;
+  public static String toJson(Object obj) {
+    final String json;
+    try {
+      json = MAPPER.writeValueAsString(obj);
+    } catch (JsonProcessingException e) {
+      throw new PorterException("json serialization failed", e);
     }
+    return json;
+  }
 }

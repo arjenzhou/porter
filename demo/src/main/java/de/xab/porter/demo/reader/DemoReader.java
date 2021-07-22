@@ -7,8 +7,8 @@ import de.xab.porter.transfer.jdbc.reader.JDBCReader;
  * demo reader with h2 database
  */
 public class DemoReader extends JDBCReader {
-    @Override
-    public String getJDBCUrl(DataConnection dataConnection) {
-        return "jdbc:h2:~/porter";
-    }
+  @Override
+  public String getJDBCUrl(DataConnection dataConnection) {
+    return "jdbc:h2:~/porter";
+  }
 }

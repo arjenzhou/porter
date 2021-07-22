@@ -5,18 +5,13 @@ package de.xab.porter.api.exception;
  * suppressed any exception thrown from deeper layer.
  */
 public final class PorterException extends RuntimeException {
-    public PorterException() {
-    }
+  public PorterException() {}
 
-    public PorterException(String message) {
-        super(message);
-    }
+  public PorterException(String message) { super(message); }
 
-    public PorterException(String message, Throwable cause) {
-        super(message, cause);
-    }
+  public PorterException(String message, Throwable cause) {
+    super(message, cause);
+  }
 
-    public PorterException(Throwable cause) {
-        super(cause);
-    }
+  public PorterException(Throwable cause) { super(cause); }
 }
