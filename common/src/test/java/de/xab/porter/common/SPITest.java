@@ -47,8 +47,8 @@ public class SPITest {
     public void testNoneRegistered() {
         try {
             ExtensionLoader.getExtensionLoader().loadExtension("any", UnregisteredService.class);
-        } catch (RuntimeException e) {
-            assert e instanceof PorterException;
+        } catch (PorterException e) {
+            assert e.getMessage().contains("not found");
         }
     }
 }
