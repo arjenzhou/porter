@@ -34,7 +34,7 @@ See [CONTRIBUTING](CONTRIBUTING.md) for details on submitting patches and the co
 
 ## Reporting bugs
 
-Follow [ISSUE_TEMPLATE](ISSUE_TEMPLATE.md) to report any issues.
+Follow [ISSUE_TEMPLATE](.github/ISSUE_TEMPLATE/BUG_REPORT.md) to report any issues.
 
 ## License
 
