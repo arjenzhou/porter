@@ -5,7 +5,7 @@ package de.xab.porter.api.dataconnection;
  * inner class {@link Properties} describe the behavior how sink table was handled.
  */
 public final class SinkConnection extends DataConnection {
-    private Properties properties = new Properties();
+    private Properties properties;
 
     //constructors
     public SinkConnection() {
@@ -14,6 +14,7 @@ public final class SinkConnection extends DataConnection {
 
     protected SinkConnection(Builder builder) {
         super(builder);
+        this.properties = builder.properties == null ? new Properties() : builder.properties;
     }
 
     public Properties getProperties() {
