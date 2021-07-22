@@ -1,6 +1,6 @@
 ---
-name: Bug about: Create a report to help us improve
-
+name: Bug 
+about: Create a report to help us improve
 ---
 
 - [ ] I have searched the [issues](https://github.com/arjenzhou/porter/issues) of this repository and believe that this
