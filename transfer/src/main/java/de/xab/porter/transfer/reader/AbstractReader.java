@@ -15,6 +15,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+/**
+ * abstract implementation of reader
+ */
 public abstract class AbstractReader implements Reader, Connectable {
     private final Logger logger = Loggers.getLogger(this.getClass());
     private String type;
@@ -87,9 +90,9 @@ public abstract class AbstractReader implements Reader, Connectable {
         if (properties.isTable()) {
             String columns;
             if (!tableMeta.isEmpty()) {
-                columns = tableMeta.values().stream()
-                        .map(Column::getName)
-                        .collect(Collectors.joining(", "));
+                columns = tableMeta.values().stream().
+                        map(Column::getName).
+                        collect(Collectors.joining(", "));
             } else {
                 columns = "*";
             }

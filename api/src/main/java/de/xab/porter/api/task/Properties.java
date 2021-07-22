@@ -1,6 +1,9 @@
 package de.xab.porter.api.task;
 
-public class Properties {
+/**
+ * global properties of one transmission action
+ */
+public final class Properties {
     private String channel = "default";
 
     public String getChannel() {

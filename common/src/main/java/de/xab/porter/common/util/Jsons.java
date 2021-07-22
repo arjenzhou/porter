@@ -5,17 +5,23 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.xab.porter.api.exception.PorterException;
 
-public class Jsons {
-    private static final ObjectMapper mapper = new ObjectMapper();
+/**
+ * json utils
+ */
+public final class Jsons {
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     static {
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    }
+
+    private Jsons() {
     }
 
     public static <T> T fromJson(String content, Class<T> clazz) {
-        T t;
+        final T t;
         try {
-            t = mapper.readValue(content, clazz);
+            t = MAPPER.readValue(content, clazz);
         } catch (JsonProcessingException e) {
             throw new PorterException("json deserialization failed", e);
         }
@@ -23,9 +29,9 @@ public class Jsons {
     }
 
     public static String toJson(Object obj) {
-        String json;
+        final String json;
         try {
-            json = mapper.writeValueAsString(obj);
+            json = MAPPER.writeValueAsString(obj);
         } catch (JsonProcessingException e) {
             throw new PorterException("json serialization failed", e);
         }

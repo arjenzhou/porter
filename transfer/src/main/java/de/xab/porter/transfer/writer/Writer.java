@@ -5,6 +5,9 @@ import de.xab.porter.api.dataconnection.DataConnection;
 import de.xab.porter.transfer.channel.Channel;
 import de.xab.porter.transfer.connection.Connectable;
 
+/**
+ * writer can write data to datasource
+ */
 public interface Writer extends Connectable {
     /**
      * write data to sink data source, may contains operations before do write

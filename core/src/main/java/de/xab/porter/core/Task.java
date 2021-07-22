@@ -27,31 +27,26 @@ public class Task {
     }
 
     public void init() {
-        SrcConnection srcConnection = context.getSrcConnection();
+        final SrcConnection srcConnection = context.getSrcConnection();
         this.reader = ExtensionLoader.getExtensionLoader().loadExtension(srcConnection.getType(), Reader.class);
         this.reader.setChannels(new ArrayList<>());
         register();
         //todo split
     }
 
-//    public List<Reader> split() {
-//        Object connection = reader.connect(context.getSrcConnection(), reader.getDataSource(context.getSrcConnection()));
-//        List<Reader> readers = this.reader.split(connection, context);
-//        return readers;
-//    }
-
     /**
      * construct relations among reader, writer and its channel, define the action when channel is ready to write
      */
     public void register() {
-        List<SinkConnection> sinkConnections = context.getSinkConnections();
-        this.writers = sinkConnections.stream()
-                .map(sink -> {
-                    Writer writer = ExtensionLoader.getExtensionLoader().loadExtension(sink.getType(), Writer.class);
-                    Object dataSource = writer.getDataSource(sink);
-                    Object connection = writer.connect(sink, writer.getDataSource(sink));
-                    Channel channel = ExtensionLoader.getExtensionLoader()
-                            .loadExtension(this.context.getProperties().getChannel(), Channel.class);
+        final List<SinkConnection> sinkConnections = context.getSinkConnections();
+        this.writers = sinkConnections.stream().
+                map(sink -> {
+                    final Writer writer = ExtensionLoader.getExtensionLoader().
+                            loadExtension(sink.getType(), Writer.class);
+                    final Object dataSource = writer.getDataSource(sink);
+                    final Object connection = writer.connect(sink, writer.getDataSource(sink));
+                    final Channel channel = ExtensionLoader.getExtensionLoader().
+                            loadExtension(this.context.getProperties().getChannel(), Channel.class);
                     channel.setOnReadListener(data -> writer.write(connection, dataSource, sink, data));
                     reader.getChannels().add(channel);
                     return Map.entry(writer, channel);
@@ -63,24 +58,24 @@ public class Task {
      * init source behavior by sinks properties
      */
     private void registerProperties() {
-        SrcConnection srcConnection = context.getSrcConnection();
-        SrcConnection.Properties srcConnectionProperties = srcConnection.getProperties();
-        List<SinkConnection> sinkConnections = context.getSinkConnections();
+        final SrcConnection srcConnection = context.getSrcConnection();
+        final SrcConnection.Properties srcConnectionProperties = srcConnection.getProperties();
+        final List<SinkConnection> sinkConnections = context.getSinkConnections();
         srcConnectionProperties.setCreate(
-                sinkConnections.stream().map(SinkConnection::getProperties)
-                        .anyMatch(SinkConnection.Properties::isCreate));
+                sinkConnections.stream().map(SinkConnection::getProperties).
+                        anyMatch(SinkConnection.Properties::isCreate));
     }
 
     /**
      * start a transmission task
      */
     public void start() {
-        Object dataSource = reader.getDataSource(context.getSrcConnection());
+        final Object dataSource = reader.getDataSource(context.getSrcConnection());
         Object connection = null;
         try {
             connection = reader.connect(context.getSrcConnection(), dataSource);
             reader.read(connection, context);
-        } catch (Exception e) {
+        } catch (PorterException e) {
             throw new PorterException("reader start failed", e);
         } finally {
             reader.close(connection, dataSource);

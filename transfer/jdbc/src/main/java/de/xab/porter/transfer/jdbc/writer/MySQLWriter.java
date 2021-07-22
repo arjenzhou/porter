@@ -2,6 +2,9 @@ package de.xab.porter.transfer.jdbc.writer;
 
 import de.xab.porter.api.dataconnection.DataConnection;
 
+/**
+ * mysql JDBC writer
+ */
 public class MySQLWriter extends JDBCWriter {
 
     @Override

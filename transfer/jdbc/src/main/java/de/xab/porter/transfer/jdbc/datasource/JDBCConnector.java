@@ -13,15 +13,18 @@ import java.util.logging.Logger;
 
 import static de.xab.porter.common.constant.Constant.*;
 
-public interface JDBCDataSource extends Connectable {
-    Logger logger = Loggers.getLogger("de.xab.porter.transfer.jdbc.datasource.JDBCDataSource");
+/**
+ * a connector with JDBC data source
+ */
+public interface JDBCConnector extends Connectable {
+    Logger LOGGER = Loggers.getLogger("de.xab.porter.transfer.jdbc.datasource.JDBCDataSource");
 
     @Override
     default java.sql.Connection connect(DataConnection dataConnection, Object dataSource) {
         java.sql.Connection connection;
         HikariDataSource hikariDataSource = (HikariDataSource) dataSource;
         try {
-            logger.log(Level.INFO, String.format("connecting to %s %s...",
+            LOGGER.log(Level.INFO, String.format("connecting to %s %s...",
                     dataConnection.getType(), dataConnection.getUrl()));
             connection = hikariDataSource.getConnection();
         } catch (SQLException exception) {
@@ -34,7 +37,7 @@ public interface JDBCDataSource extends Connectable {
     @Override
     default void close(Object connection, Object dataSource) {
         HikariDataSource hikariDataSource = (HikariDataSource) dataSource;
-        logger.log(Level.INFO, String.format("closing connection to %s...", hikariDataSource.getJdbcUrl()));
+        LOGGER.log(Level.INFO, String.format("closing connection to %s...", hikariDataSource.getJdbcUrl()));
         try {
             if (connection != null && closed(connection)) {
                 ((java.sql.Connection) connection).close();
@@ -71,9 +74,6 @@ public interface JDBCDataSource extends Connectable {
         hikariConfig.setIdleTimeout(DEFAULT_IDLE_TIMEOUT);
         hikariConfig.setConnectionTestQuery("SELECT 1");
         hikariConfig.setKeepaliveTime(DEFAULT_KEEP_ALIVE_TIME);
-//        hikariConfig.setAutoCommit(false);
-//        hikariConfig.setIdleTimeout();
-//        hikariConfig.setKeepaliveTime();
         return new HikariDataSource(hikariConfig);
     }
 

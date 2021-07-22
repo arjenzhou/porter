@@ -3,9 +3,9 @@ package de.xab.porter.api;
 import java.sql.JDBCType;
 
 /**
- * A entity class describe the definition of table
+ * A entity class describe the definition of table.
  */
-public class Column {
+public final class Column {
     // not null
     private String name;
     private String className;

@@ -1,7 +1,7 @@
 package de.xab.porter.api.dataconnection;
 
 /**
- * super class of any input data structure
+ * super class of any input data structure.
  * {@link SrcConnection} {@link SinkConnection}
  */
 public class DataConnection {
@@ -16,7 +16,7 @@ public class DataConnection {
     public DataConnection() {
     }
 
-    protected DataConnection(Builder<?> builder) {
+    protected DataConnection(AbstractBuilder<?> builder) {
         this.type = builder.type;
         this.url = builder.url;
         this.username = builder.username;
@@ -83,8 +83,10 @@ public class DataConnection {
         this.table = table;
     }
 
-    //builder
-    public abstract static class Builder<T extends DataConnection> {
+    /**
+     * builder
+     */
+    public abstract static class AbstractBuilder<T extends DataConnection> {
         private String type;
         private String url;
         private String username;
@@ -93,37 +95,37 @@ public class DataConnection {
         private String schema;
         private String table;
 
-        public Builder<T> type(String type) {
+        public AbstractBuilder<T> type(String type) {
             this.type = type;
             return this;
         }
 
-        public Builder<T> url(String url) {
+        public AbstractBuilder<T> url(String url) {
             this.url = url;
             return this;
         }
 
-        public Builder<T> username(String username) {
+        public AbstractBuilder<T> username(String username) {
             this.username = username;
             return this;
         }
 
-        public Builder<T> password(String password) {
+        public AbstractBuilder<T> password(String password) {
             this.password = password;
             return this;
         }
 
-        public Builder<T> catalog(String catalog) {
+        public AbstractBuilder<T> catalog(String catalog) {
             this.catalog = catalog;
             return this;
         }
 
-        public Builder<T> schema(String schema) {
+        public AbstractBuilder<T> schema(String schema) {
             this.schema = schema;
             return this;
         }
 
-        public Builder<T> table(String table) {
+        public AbstractBuilder<T> table(String table) {
             this.table = table;
             return this;
         }

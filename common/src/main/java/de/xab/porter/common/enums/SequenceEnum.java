@@ -1,14 +1,13 @@
 package de.xab.porter.common.enums;
 
 /**
- * possible state of {@link de.xab.porter.api.Result#sequenceNum}, except positive number that stands sequence number
+ * possible state of {@link de.xab.porter.api.Result#sequenceNum}, except positive number that stands sequence number.
  */
 public enum SequenceEnum {
     FIRST(0),
     FIRST_AND_LAST(-1),
     LAST_NOT_EMPTY(-3),
-    LAST_IS_EMPTY(-2),
-    ;
+    LAST_IS_EMPTY(-2);
 
     private int sequenceNum;
 

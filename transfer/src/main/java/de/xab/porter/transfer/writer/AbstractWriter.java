@@ -3,6 +3,7 @@ package de.xab.porter.transfer.writer;
 import de.xab.porter.api.Result;
 import de.xab.porter.api.dataconnection.DataConnection;
 import de.xab.porter.api.dataconnection.SinkConnection;
+import de.xab.porter.api.exception.PorterException;
 import de.xab.porter.common.util.Loggers;
 import de.xab.porter.transfer.channel.Channel;
 import de.xab.porter.transfer.connection.Connectable;
@@ -12,6 +13,9 @@ import java.util.logging.Logger;
 
 import static de.xab.porter.common.enums.SequenceEnum.*;
 
+/**
+ * abstract implementation of reader
+ */
 public abstract class AbstractWriter implements Writer, Connectable {
     private final Logger logger = Loggers.getLogger(this.getClass());
     private Channel channel;
@@ -22,8 +26,8 @@ public abstract class AbstractWriter implements Writer, Connectable {
         SinkConnection sinkConnection = (SinkConnection) dataConnection;
         SinkConnection.Properties properties = sinkConnection.getProperties();
         try {
-            properties.setQuote(properties.getQuote() == null ?
-                    getIdentifierQuote(connection) : properties.getQuote());
+            properties.setQuote(properties.getQuote() == null
+                    ? getIdentifierQuote(connection) : properties.getQuote());
             properties.setTableIdentifier(getTableIdentifier(sinkConnection));
 
             if (isFirst(data.getSequenceNum())) {
@@ -46,7 +50,7 @@ public abstract class AbstractWriter implements Writer, Connectable {
             if (isLast(data.getSequenceNum())) {
                 close(connection, dataSource);
             }
-        } catch (Exception exception) {
+        } catch (PorterException exception) {
             close(connection, dataSource);
         }
     }

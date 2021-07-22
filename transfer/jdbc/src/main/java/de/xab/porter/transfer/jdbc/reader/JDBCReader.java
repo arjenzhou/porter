@@ -7,7 +7,7 @@ import de.xab.porter.api.dataconnection.SrcConnection;
 import de.xab.porter.api.exception.PorterException;
 import de.xab.porter.api.task.Context;
 import de.xab.porter.common.util.Loggers;
-import de.xab.porter.transfer.jdbc.datasource.JDBCDataSource;
+import de.xab.porter.transfer.jdbc.datasource.JDBCConnector;
 import de.xab.porter.transfer.reader.AbstractReader;
 
 import java.sql.*;
@@ -20,10 +20,14 @@ import java.util.logging.Logger;
 import static de.xab.porter.common.constant.Constant.DEFAULT_BATCH_SIZE;
 import static de.xab.porter.common.enums.SequenceEnum.*;
 import static de.xab.porter.common.util.Strings.notNullOrEmpty;
+import static java.sql.ResultSet.CONCUR_READ_ONLY;
 import static java.sql.ResultSet.TYPE_FORWARD_ONLY;
 
-public class JDBCReader extends AbstractReader implements JDBCDataSource {
-    Logger logger = Loggers.getLogger(this.getClass());
+/**
+ * common JDBC reader
+ */
+public class JDBCReader extends AbstractReader implements JDBCConnector {
+    private Logger logger = Loggers.getLogger(this.getClass());
 
     @Override
     public void doRead(SrcConnection srcConnection, Object connection, Map<String, Column> columnMap) {
@@ -60,10 +64,10 @@ public class JDBCReader extends AbstractReader implements JDBCDataSource {
             //last data container not fill up with batch size
             if (!relation.getData().isEmpty()) {
                 //only one batch
-                seq = seq ==
-                        FIRST.getSequenceNum() ?
-                        FIRST_AND_LAST.getSequenceNum() :
-                        LAST_NOT_EMPTY.getSequenceNum();
+                seq = seq
+                        == FIRST.getSequenceNum()
+                        ? FIRST_AND_LAST.getSequenceNum()
+                        : LAST_NOT_EMPTY.getSequenceNum();
             } else {
                 seq = LAST_IS_EMPTY.getSequenceNum();
                 relation = new Relation(meta);
@@ -71,12 +75,13 @@ public class JDBCReader extends AbstractReader implements JDBCDataSource {
             logger.log(Level.INFO, String.format("read last %d scrap(s) from %s %s",
                     relation.getData().size(), srcConnection.getType(), srcConnection.getUrl()));
             this.pushToChannel(new Result<>(seq, relation));
-        } catch (Exception exception) {
+        } catch (SQLException exception) {
             throw new PorterException("read data from JDBC connection failed", exception);
         } finally {
             Instant end = Instant.now();
             long seconds = Duration.between(start, end).toSeconds();
-            logger.log(Level.INFO, String.format("read completed. %s rows have been read, cost %s second(s)", batch, seconds));
+            logger.log(Level.INFO, String.format(
+                    "read completed. %s rows have been read, cost %s second(s)", batch, seconds));
             try {
                 if (statement != null) {
                     statement.close();
@@ -84,7 +89,8 @@ public class JDBCReader extends AbstractReader implements JDBCDataSource {
                 if (resultSet != null) {
                     resultSet.close();
                 }
-            } catch (SQLException ignored) {
+            } catch (SQLException exception) {
+                logger.log(Level.WARNING, "close JDBC connection failed");
             }
         }
     }
@@ -133,7 +139,7 @@ public class JDBCReader extends AbstractReader implements JDBCDataSource {
                     return column;
                 });
             }
-        } catch (Exception exception) {
+        } catch (SQLException exception) {
             throw new PorterException("read source meta data from JDBC connection failed", exception);
         }
         return columnMap;
@@ -143,7 +149,7 @@ public class JDBCReader extends AbstractReader implements JDBCDataSource {
      * get JDBC statement, and set properties for it
      */
     protected Statement getStatement(Connection jdbcConnection) throws SQLException {
-        Statement statement = jdbcConnection.createStatement(TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+        Statement statement = jdbcConnection.createStatement(TYPE_FORWARD_ONLY, CONCUR_READ_ONLY);
         statement.setFetchSize(DEFAULT_BATCH_SIZE);
         return statement;
     }

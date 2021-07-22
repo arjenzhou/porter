@@ -1,3 +1,8 @@
+---
+name: Bug about: Create a report to help us improve
+
+---
+
 - [ ] I have searched the [issues](https://github.com/arjenzhou/porter/issues) of this repository and believe that this
   is not a duplicate.
 - [ ] I have checked the [FAQ](FAQ.md) of this repository and believe that this is not a duplicate.
