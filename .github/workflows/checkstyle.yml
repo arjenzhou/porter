@@ -18,4 +18,4 @@ jobs:
           level: error
           checkstyle_version: 8.44
           checkstyle_config: ./codestyle/checkstyle.xml
-          fail_on_error: false
+          fail_on_error: true
