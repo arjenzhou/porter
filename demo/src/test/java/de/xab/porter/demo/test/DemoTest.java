@@ -13,6 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static de.xab.porter.api.dataconnection.SinkConnection.Properties.PREPARE_BATCH_MODE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * test class for demo reader and writer
@@ -23,7 +24,7 @@ public class DemoTest {
     private final String type = "demo";
     private final String schema = "PUBLIC";
     private final String table = "mock_table";
-    private Logger logger = Logger.getLogger(this.getClass().getName());
+    private final Logger logger = Logger.getLogger(this.getClass().getName());
 
     @BeforeEach
     private void createH2Table() {
@@ -57,7 +58,6 @@ public class DemoTest {
     public void testNewReader() {
         Session session = new Session();
         Context context = new Context();
-
         SrcConnection srcConn = ((SrcConnection.Builder) new SrcConnection.Builder().
                 type(type).
                 username("").
@@ -80,11 +80,13 @@ public class DemoTest {
                                 writeMode(PREPARE_BATCH_MODE).
                                 build()).
                 build();
-
         context.setSrcConnection(srcConn);
         context.setSinkConnections(List.of(sinkConnection));
         session.start(context);
+        assertEquals(getRows(), rows);
+    }
 
+    private int getRows() {
         try (Connection connection = DriverManager.getConnection(url, "", "");
              Statement statement = connection.createStatement()) {
             final ResultSet resultSet = statement.executeQuery("SELECT * FROM \"PUBLIC\".\"mock_table_tmp\"");
@@ -98,9 +100,10 @@ public class DemoTest {
                 logger.log(Level.INFO, res.toString());
                 row++;
             }
-            assert row == rows;
+            return row;
         } catch (SQLException exception) {
             logger.log(Level.SEVERE, exception.getMessage());
         }
+        return 0;
     }
 }

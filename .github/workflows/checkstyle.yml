@@ -1,0 +1,21 @@
+name: checkstyle
+
+on: pull_request
+
+jobs:
+  checkstyle:
+    runs-on: ubuntu-latest
+    name: Checkstyle job
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Run checkstyle
+        uses: nikitasavinov/checkstyle-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          tool_name: checkstyle
+          level: error
+          checkstyle_version: 8.44
+          checkstyle_config: ./codestyle/checkstyle.xml
+          fail_on_error: true
