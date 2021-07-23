@@ -96,7 +96,8 @@ public class ExtensionLoader {
                 throw new PorterException(String.format("load extension class %s failed", clazz.getName()), e);
             }
         }
-        throw new PorterException(String.format("type `%s` of extension %s not found", type, clazz.getName()));
+        throw new PorterException(String.format
+                                  ("type `%s` of extension %s not found", type, clazz.getName()));
     }
 
     private Map.Entry<String, String> parseTypeAndClass(String line, Class<?> clazz) {
@@ -113,9 +114,7 @@ public class ExtensionLoader {
             if (split.length == 2) {
                 driverType = split[0];
                 className = split[1];
-                return Map.entry(driverType, className);
-            }
-        }
+                return Map.entry(driverType, className);}}
         throw new PorterException(String.format(
                 "parse extension %s failed. expected `type=foo.bar.Extension`, got %s", clazz.getSimpleName(), line));
     }
