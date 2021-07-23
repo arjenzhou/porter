@@ -2,8 +2,6 @@ group 'de.0xab'
 version project.property('porter-version')
 
 ext {
-    //plugin version
-    checkstylePlugin = '8.9'
     //test dependencies version
     jupiter = '5.7.0'
     mockito = '3.11.2'
@@ -28,7 +26,6 @@ buildscript {
 allprojects {
     apply plugin: 'java'
     apply plugin: 'jacoco'
-    apply from: rootDir.path + '/gradle/checkstyle.gradle'
 
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
