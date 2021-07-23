@@ -70,10 +70,12 @@ public class ExtensionLoader {
         final ClassLoader cl = findClassLoader(clazz);
         try {
             urls = cl.getResources(fileName);
-        } catch (IOException e) {
+        } catch (IOException e)
+        {
             throw new PorterException(String.format("no implement(s) of %s found in %s", clazz.getName(), fileName));
         }
-        while (urls != null && urls.hasMoreElements()) {
+        while (urls != null && urls.hasMoreElements())
+        {
             final URL url = urls.nextElement();
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(
                     url.openStream(), StandardCharsets.UTF_8))) {
@@ -92,8 +94,6 @@ public class ExtensionLoader {
                         }
                     }
                 }
-            } catch (IOException e) {
-                throw new PorterException(String.format("load extension class %s failed", clazz.getName()), e);
             }
         }
         throw new PorterException(String.format("type `%s` of extension %s not found", type, clazz.getName()));

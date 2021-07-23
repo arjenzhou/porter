@@ -91,10 +91,6 @@
         <module name="UnnecessaryParentheses"/>
         <module name="VariableDeclarationUsageDistance"/>
         <!--Imports-->
-        <module name="CustomImportOrder">
-            <property name="customImportOrderRules"
-                      value="THIRD_PARTY_PACKAGE###STATIC###STANDARD_JAVA_PACKAGE"/>
-        </module>
         <module name="RedundantImport"/>
         <module name="UnusedImports"/>
         <!--Javadoc Comments-->
