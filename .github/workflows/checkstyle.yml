@@ -13,7 +13,8 @@ jobs:
         uses: nikitasavinov/checkstyle-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: 'github-pr-review'
-          tool_name: 'checkstyle'
-          checkstyle_version: '8.44'
+          reporter: github-pr-review
+          tool_name: checkstyle
+          level: error
+          checkstyle_version: 8.44
           checkstyle_config: ./checkstyle.xml
