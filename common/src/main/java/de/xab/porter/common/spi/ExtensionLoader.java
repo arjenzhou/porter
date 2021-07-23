@@ -30,7 +30,7 @@ import static de.xab.porter.common.util.Strings.notNullOrEmpty;
  * comments after # will be ignored
  */
 public class ExtensionLoader {
-    private static final String FOLDER = "";
+    private static final String FOLDER = "META-INF/porter/";
     private static final Map<Class<?>, Map<String, Class<?>>> EXTENSION_HOLDER = new ConcurrentHashMap<>();
 
     public static ExtensionLoader getExtensionLoader() {
