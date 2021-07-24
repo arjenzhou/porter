@@ -1,3 +1,0 @@
-clickhouse=de.xab.porter.transfer.jdbc.writer.ClickhouseWriter
-mysql=de.xab.porter.transfer.jdbc.writer.MySQLWriter
-postgresql=de.xab.porter.transfer.jdbc.writer.PostgreSQLWriter
