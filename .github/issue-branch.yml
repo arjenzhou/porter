@@ -1,0 +1,9 @@
+mode: chatops
+autoCloseIssue: true
+branches:
+  - label: enhancement
+    prefix: feature-${issue.number}-${issue.title,}
+  - label: bug
+    prefix: bugfix-${issue.number}-${issue.title,}
+  - label: question
+    skip: true
