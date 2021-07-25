@@ -1,9 +1,10 @@
 mode: chatops
 autoCloseIssue: true
+branchName: ${issue.number}-${issue.title,}
 branches:
   - label: enhancement
-    prefix: feature-${issue.number}-${issue.title,}
+    prefix: feature/
   - label: bug
-    prefix: bugfix-${issue.number}-${issue.title,}
+    prefix: bugfix/
   - label: question
     skip: true
