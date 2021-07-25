@@ -21,7 +21,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static de.xab.porter.api.dataconnection.SinkConnection.Properties.*;
-import static de.xab.porter.common.util.Strings.notNullOrEmpty;
+import static de.xab.porter.common.util.Strings.notNullOrBlank;
 
 /**
  * common JDBC writer
@@ -207,9 +207,9 @@ public class JDBCWriter extends AbstractWriter implements JDBCConnector {
                         "\t" + getColumnIdentifier(column.getName(), quote)
                                 + "\t" + getColumnType(column)
                                 + "\t"
-                                + ((notNullOrEmpty(column.getNullable()) && "NO".equals(column.getNullable()))
+                                + ((notNullOrBlank(column.getNullable()) && "NO".equals(column.getNullable()))
                                 ? "NOT NULL" : "NULL")
-                                + (notNullOrEmpty(column.getComment())
+                                + (notNullOrBlank(column.getComment())
                                 ? ("\tCOMMENT\t'" + column.getComment() + "'") : "")).
                 collect(Collectors.joining(", \n"));
     }

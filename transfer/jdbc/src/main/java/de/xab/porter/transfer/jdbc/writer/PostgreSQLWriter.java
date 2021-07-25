@@ -19,7 +19,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import static de.xab.porter.common.util.Strings.notNullOrEmpty;
+import static de.xab.porter.common.util.Strings.notNullOrBlank;
 
 /**
  * PostgreSQL JDBC writer
@@ -77,7 +77,7 @@ public class PostgreSQLWriter extends JDBCWriter {
                 map(column ->
                         "\t" + getColumnIdentifier(column.getName(), quote)
                                 + "\t" + getColumnType(column)
-                                + "\t" + ((notNullOrEmpty(column.getNullable()) && "NO".equals(column.getNullable()))
+                                + "\t" + ((notNullOrBlank(column.getNullable()) && "NO".equals(column.getNullable()))
                                 ? "NOT NULL" : "NULL")).
                 collect(Collectors.joining(", \n"));
     }
@@ -85,7 +85,7 @@ public class PostgreSQLWriter extends JDBCWriter {
     @Override
     protected String getAfterDDL(String tableIdentifier, String quote, List<Column> meta) {
         return meta.stream().
-                map(column -> notNullOrEmpty(column.getComment())
+                map(column -> notNullOrBlank(column.getComment())
                         ? ";\nCOMMENT ON COLUMN " + tableIdentifier + "." + quote + column.getName() + quote
                         + " IS '" + column.getComment() + "'" : "").
                 collect(Collectors.joining()) + ";";

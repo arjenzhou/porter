@@ -1,6 +1,5 @@
 package de.xab.porter.common.test.spi;
 
-import de.xab.porter.api.exception.PorterException;
 import de.xab.porter.common.spi.ExtensionLoader;
 import de.xab.porter.common.test.spi.service.MockService;
 import de.xab.porter.common.test.spi.service.UnregisteredService;
@@ -15,31 +14,31 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class SPITest {
     @Test
     public void testExists() {
-        MockService impl = ExtensionLoader.getExtensionLoader().loadExtension("impl", MockService.class);
+        MockService impl = ExtensionLoader.getExtensionLoader(MockService.class).loadExtension("impl");
         assertEquals("hello world", impl.mock());
     }
 
     @Test
     public void testNotExists() {
-        assertThrows(PorterException.class, () ->
-                ExtensionLoader.getExtensionLoader().loadExtension("none", MockService.class));
+        assertThrows(TypeNotPresentException.class, () ->
+                ExtensionLoader.getExtensionLoader(MockService.class).loadExtension("none"));
     }
 
     @Test
     public void testTypoImpl() {
-        assertThrows(PorterException.class, () ->
-                ExtensionLoader.getExtensionLoader().loadExtension("typo", MockService.class));
+        assertThrows(IllegalArgumentException.class, () ->
+                ExtensionLoader.getExtensionLoader(MockService.class).loadExtension("typo"));
     }
 
     @Test
     public void testNoImplemented() {
-        assertThrows(PorterException.class, () ->
-                ExtensionLoader.getExtensionLoader().loadExtension("noimpl", MockService.class));
+        assertThrows(IllegalStateException.class, () ->
+                ExtensionLoader.getExtensionLoader(MockService.class).loadExtension("noimpl"));
     }
 
     @Test
     public void testNoneRegistered() {
-        assertThrows(PorterException.class, () ->
-                ExtensionLoader.getExtensionLoader().loadExtension("any", UnregisteredService.class));
+        assertThrows(TypeNotPresentException.class, () ->
+                ExtensionLoader.getExtensionLoader(UnregisteredService.class).loadExtension("any"));
     }
 }

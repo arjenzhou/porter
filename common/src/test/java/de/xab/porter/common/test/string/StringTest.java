@@ -13,24 +13,24 @@ public class StringTest {
     @Test
     public void testNull() {
         String str = null;
-        assertFalse(Strings.notNullOrEmpty(str));
+        assertFalse(Strings.notNullOrBlank(str));
     }
 
     @Test
     public void testEmpty() {
         String str = "";
-        assertFalse(Strings.notNullOrEmpty(str));
+        assertFalse(Strings.notNullOrBlank(str));
     }
 
     @Test
     public void testNotNullOrEmpty() {
         String str = "abc";
-        Assertions.assertTrue(Strings.notNullOrEmpty(str));
+        Assertions.assertTrue(Strings.notNullOrBlank(str));
     }
 
     @Test
     public void testLongEmpty() {
         String str = " ";
-        assertFalse(Strings.notNullOrEmpty(str));
+        assertFalse(Strings.notNullOrBlank(str));
     }
 }
