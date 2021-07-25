@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 
 import static de.xab.porter.common.constant.Constant.DEFAULT_BATCH_SIZE;
 import static de.xab.porter.common.enums.SequenceEnum.*;
-import static de.xab.porter.common.util.Strings.notNullOrEmpty;
+import static de.xab.porter.common.util.Strings.notNullOrBlank;
 import static java.sql.ResultSet.CONCUR_READ_ONLY;
 import static java.sql.ResultSet.TYPE_FORWARD_ONLY;
 
@@ -124,7 +124,7 @@ public class JDBCReader extends AbstractReader implements JDBCConnector {
                 String pkName = primaryKeys.getString("PK_NAME");
                 short keySeq = primaryKeys.getShort("KEY_SEQ");
                 columnMap.computeIfPresent(columnName, (ignored, column) -> {
-                    column.setPrimaryKey(notNullOrEmpty(pkName));
+                    column.setPrimaryKey(notNullOrBlank(pkName));
                     column.setIndexName(pkName);
                     column.setPrimaryKeySeq(keySeq);
                     return column;

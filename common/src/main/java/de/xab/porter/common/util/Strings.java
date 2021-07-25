@@ -7,7 +7,7 @@ public final class Strings {
     private Strings() {
     }
 
-    public static boolean notNullOrEmpty(String str) {
+    public static boolean notNullOrBlank(String str) {
         return str != null && !str.isBlank();
     }
 }
