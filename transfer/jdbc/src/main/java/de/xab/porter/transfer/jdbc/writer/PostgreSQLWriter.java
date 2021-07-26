@@ -12,7 +12,6 @@ import org.postgresql.core.BaseConnection;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.logging.Level;
@@ -28,15 +27,15 @@ public class PostgreSQLWriter extends JDBCWriter {
     private Logger logger = Loggers.getLogger(this.getClass());
 
     @Override
-    protected void writeInDefaultMode(SinkConnection sinkConnection, Connection jdbcConnection, Result<?> data) {
-        writeInPostgreSQLFileMode(sinkConnection, jdbcConnection, data);
+    protected void writeInDefaultMode(Result<?> data) {
+        writeInPostgreSQLFileMode(data);
     }
 
     /**
      * using copy for postgreSQL
      */
-    protected void writeInPostgreSQLFileMode(SinkConnection sinkConnection, Connection jdbcConnection, Result<?> data) {
-        SinkConnection.Properties properties = sinkConnection.getProperties();
+    protected void writeInPostgreSQLFileMode(Result<?> data) {
+        SinkConnection.Properties properties = this.sinkConnection.getProperties();
         Relation relation = (Relation) data.getResult();
         StringReader stringReader = null;
         String columns = "";
@@ -48,7 +47,7 @@ public class PostgreSQLWriter extends JDBCWriter {
         String tableIdentifier = properties.getTableIdentifier();
         String copySQL = String.format("COPY %s %s FROM STDIN WITH DELIMITER '|'", tableIdentifier, columns);
         try {
-            BaseConnection pgConnection = jdbcConnection.unwrap(BaseConnection.class);
+            BaseConnection pgConnection = this.connection.unwrap(BaseConnection.class);
             CopyManager copyManager = new CopyManager(pgConnection);
             String csv = relation.getData().stream().
                     map(row -> row.stream().
@@ -92,11 +91,11 @@ public class PostgreSQLWriter extends JDBCWriter {
     }
 
     @Override
-    protected String getTableIdentifier(SinkConnection sinkConnection) {
-        String quote = sinkConnection.getProperties().getQuote();
-        return quote + sinkConnection.getCatalog() + quote + "."
-                + quote + sinkConnection.getSchema() + quote + "."
-                + quote + sinkConnection.getTable() + quote;
+    protected String getTableIdentifier() {
+        String quote = this.sinkConnection.getProperties().getQuote();
+        return quote + this.sinkConnection.getCatalog() + quote + "."
+                + quote + this.sinkConnection.getSchema() + quote + "."
+                + quote + this.sinkConnection.getTable() + quote;
     }
 
     @Override

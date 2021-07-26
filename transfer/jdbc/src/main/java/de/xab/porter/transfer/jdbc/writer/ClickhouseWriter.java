@@ -2,9 +2,7 @@ package de.xab.porter.transfer.jdbc.writer;
 
 import de.xab.porter.api.Relation;
 import de.xab.porter.api.Result;
-import de.xab.porter.api.dataconnection.SinkConnection;
 
-import java.sql.Connection;
 import java.util.Map;
 
 /**
@@ -30,7 +28,7 @@ public class ClickhouseWriter extends JDBCWriter {
     }
 
     @Override
-    protected void writeInDefaultMode(SinkConnection sinkConnection, Connection jdbcConnection, Result<?> data) {
-        writeInPrepareBatchMode(jdbcConnection, (Relation) data.getResult(), sinkConnection.getProperties());
+    protected void writeInDefaultMode(Result<?> data) {
+        writeInPrepareBatchMode((Relation) data.getResult());
     }
 }

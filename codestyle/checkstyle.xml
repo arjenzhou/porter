@@ -47,7 +47,9 @@
         <module name="MutableException"/>
         <module name="OneTopLevelClass"/>
         <module name="ThrowsCount"/>
-        <module name="VisibilityModifier"/>
+        <module name="VisibilityModifier">
+            <property name="protectedAllowed" value="true"/>
+        </module>
         <!--Coding-->
         <module name="ArrayTrailingComma"/>
         <module name="CovariantEquals"/>
@@ -77,7 +79,6 @@
         <module name="OneStatementPerLine"/>
         <module name="OverloadMethodsDeclarationOrder"/>
         <module name="PackageDeclaration"/>
-        <module name="ParameterAssignment"/>
         <module name="RequireThis"/>
         <module name="ReturnCount">
             <property name="max" value="3"/>
