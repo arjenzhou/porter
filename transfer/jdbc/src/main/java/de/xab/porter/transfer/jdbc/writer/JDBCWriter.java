@@ -2,6 +2,7 @@ package de.xab.porter.transfer.jdbc.writer;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import com.zaxxer.hikari.pool.HikariPool;
 import de.xab.porter.api.Column;
 import de.xab.porter.api.Relation;
 import de.xab.porter.api.Result;
@@ -292,12 +293,12 @@ public class JDBCWriter extends AbstractWriter {
     @Override
     public void connect(DataConnection dataConnection) throws ConnectionException {
         this.sinkConnection = (SinkConnection) dataConnection;
-        this.dataSource = getDataSource(dataConnection);
         try {
             logger.log(Level.INFO, String.format("connecting to %s %s...",
                     dataConnection.getType(), dataConnection.getUrl()));
+            this.dataSource = getDataSource(dataConnection);
             this.connection = this.dataSource.getConnection();
-        } catch (SQLException exception) {
+        } catch (SQLException | HikariPool.PoolInitializationException exception) {
             throw new ConnectionException(String.format("connect to %s %s failed",
                     dataConnection.getType(), dataConnection.getUrl()), exception);
         }
@@ -305,12 +306,14 @@ public class JDBCWriter extends AbstractWriter {
 
     @Override
     public void close() {
-        logger.log(Level.INFO, String.format("closing connection to %s...", this.dataSource.getJdbcUrl()));
+        logger.log(Level.INFO, String.format("closing connection to %s...", this.sinkConnection));
         try {
             if (this.connection != null && closed()) {
                 this.connection.close();
             }
-            this.dataSource.close();
+            if (this.dataSource != null) {
+                this.dataSource.close();
+            }
         } catch (SQLException e) {
             throw new PorterException("connection close failed", e);
         }

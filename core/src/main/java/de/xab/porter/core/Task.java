@@ -45,13 +45,11 @@ public class Task {
         List<SinkConnection> sinkConnections = context.getSinkConnections();
         this.writers = sinkConnections.stream().
                 map(sink -> {
-                    Writer writer = ExtensionLoader.getExtensionLoader(Writer.class).
-                            loadExtension(sink.getType());
+                    Writer writer = ExtensionLoader.getExtensionLoader(Writer.class).loadExtension(sink.getType());
                     try {
                         writer.connect(sink);
                     } catch (ConnectionException e) {
                         logger.log(Level.WARNING, "writer connection failed" + e.getCause());
-                    } finally {
                         writer.close();
                     }
                     Channel channel = ExtensionLoader.getExtensionLoader(Channel.class).
@@ -70,9 +68,9 @@ public class Task {
         SrcConnection srcConnection = context.getSrcConnection();
         SrcConnection.Properties srcConnectionProperties = srcConnection.getProperties();
         List<SinkConnection> sinkConnections = context.getSinkConnections();
-        srcConnectionProperties.setCreate(
-                sinkConnections.stream().map(SinkConnection::getProperties).
-                        anyMatch(SinkConnection.Properties::isCreate));
+        srcConnectionProperties.setCreate(sinkConnections.stream().
+                map(SinkConnection::getProperties).
+                anyMatch(SinkConnection.Properties::isCreate));
     }
 
     /**

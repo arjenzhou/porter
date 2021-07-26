@@ -2,6 +2,7 @@ package de.xab.porter.transfer.jdbc.reader;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import com.zaxxer.hikari.pool.HikariPool;
 import de.xab.porter.api.Column;
 import de.xab.porter.api.Relation;
 import de.xab.porter.api.Result;
@@ -66,6 +67,7 @@ public class JDBCReader extends AbstractReader {
                     relation = new Relation(meta);
                 }
             }
+            //last data container not fill up with batch size
             pushLastBatch(meta, seq, relation);
         } catch (SQLException exception) {
             try {
@@ -181,7 +183,6 @@ public class JDBCReader extends AbstractReader {
     }
 
     private void pushLastBatch(List<Column> meta, long seq, Relation relation) {
-        //last data container not fill up with batch size
         if (!relation.getData().isEmpty()) {
             //only one batch
             seq = seq
@@ -200,12 +201,12 @@ public class JDBCReader extends AbstractReader {
     @Override
     public void connect(DataConnection dataConnection) throws ConnectionException {
         this.srcConnection = (SrcConnection) dataConnection;
-        this.dataSource = getDataSource(dataConnection);
         try {
             logger.log(Level.INFO, String.format("connecting to %s %s...",
                     dataConnection.getType(), dataConnection.getUrl()));
+            this.dataSource = getDataSource(dataConnection);
             this.connection = this.dataSource.getConnection();
-        } catch (SQLException exception) {
+        } catch (HikariPool.PoolInitializationException | SQLException exception) {
             throw new ConnectionException(String.format("connect to %s %s failed",
                     dataConnection.getType(), dataConnection.getUrl()), exception);
         }
@@ -213,12 +214,14 @@ public class JDBCReader extends AbstractReader {
 
     @Override
     public void close() {
-        logger.log(Level.INFO, String.format("closing connection to %s...", this.dataSource.getJdbcUrl()));
+        logger.log(Level.INFO, String.format("closing connection to %s...", this.srcConnection));
         try {
             if (this.connection != null && closed()) {
                 this.connection.close();
             }
-            this.dataSource.close();
+            if (this.dataSource != null) {
+                this.dataSource.close();
+            }
         } catch (SQLException e) {
             throw new PorterException("connection close failed", e);
         }
