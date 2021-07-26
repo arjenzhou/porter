@@ -2,22 +2,26 @@ package de.xab.porter.core;
 
 import de.xab.porter.api.dataconnection.SinkConnection;
 import de.xab.porter.api.dataconnection.SrcConnection;
-import de.xab.porter.api.exception.PorterException;
 import de.xab.porter.api.task.Context;
 import de.xab.porter.common.spi.ExtensionLoader;
+import de.xab.porter.common.util.Loggers;
 import de.xab.porter.transfer.channel.Channel;
+import de.xab.porter.transfer.exception.ConnectionException;
 import de.xab.porter.transfer.reader.Reader;
 import de.xab.porter.transfer.writer.Writer;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
  * atomic unit of a transmission action, may split up by {@link Session}
  */
 public class Task {
+    private Logger logger = Loggers.getLogger(this.getClass());
     private Context context;
     private Reader reader;
     private List<Map.Entry<Writer, Channel>> writers;
@@ -41,13 +45,16 @@ public class Task {
         List<SinkConnection> sinkConnections = context.getSinkConnections();
         this.writers = sinkConnections.stream().
                 map(sink -> {
-                    Writer writer = ExtensionLoader.getExtensionLoader(Writer.class).
-                            loadExtension(sink.getType());
-                    Object dataSource = writer.getDataSource(sink);
-                    Object connection = writer.connect(sink, writer.getDataSource(sink));
+                    Writer writer = ExtensionLoader.getExtensionLoader(Writer.class).loadExtension(sink.getType());
+                    try {
+                        writer.connect(sink);
+                    } catch (ConnectionException e) {
+                        logger.log(Level.WARNING, "writer connection failed" + e.getCause());
+                        writer.close();
+                    }
                     Channel channel = ExtensionLoader.getExtensionLoader(Channel.class).
                             loadExtension(this.context.getProperties().getChannel());
-                    channel.setOnReadListener(data -> writer.write(connection, dataSource, sink, data));
+                    channel.setOnReadListener(writer::write);
                     reader.getChannels().add(channel);
                     return Map.entry(writer, channel);
                 }).collect(Collectors.toList());
@@ -61,24 +68,22 @@ public class Task {
         SrcConnection srcConnection = context.getSrcConnection();
         SrcConnection.Properties srcConnectionProperties = srcConnection.getProperties();
         List<SinkConnection> sinkConnections = context.getSinkConnections();
-        srcConnectionProperties.setCreate(
-                sinkConnections.stream().map(SinkConnection::getProperties).
-                        anyMatch(SinkConnection.Properties::isCreate));
+        srcConnectionProperties.setCreate(sinkConnections.stream().
+                map(SinkConnection::getProperties).
+                anyMatch(SinkConnection.Properties::isCreate));
     }
 
     /**
      * start a transmission task
      */
     public void start() {
-        Object dataSource = reader.getDataSource(context.getSrcConnection());
-        Object connection = null;
         try {
-            connection = reader.connect(context.getSrcConnection(), dataSource);
-            reader.read(connection, context);
-        } catch (PorterException e) {
-            throw new PorterException("reader start failed", e);
+            reader.connect(context.getSrcConnection());
+            reader.read();
+        } catch (ConnectionException e) {
+            logger.log(Level.WARNING, "reader connection failed" + e.getCause());
         } finally {
-            reader.close(connection, dataSource);
+            reader.close();
         }
     }
 }

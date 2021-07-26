@@ -1,5 +1,8 @@
 package de.xab.porter.transfer.jdbc.writer;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import com.zaxxer.hikari.pool.HikariPool;
 import de.xab.porter.api.Column;
 import de.xab.porter.api.Relation;
 import de.xab.porter.api.Result;
@@ -8,7 +11,7 @@ import de.xab.porter.api.dataconnection.SinkConnection;
 import de.xab.porter.api.exception.PorterException;
 import de.xab.porter.common.util.Jsons;
 import de.xab.porter.common.util.Loggers;
-import de.xab.porter.transfer.jdbc.connection.JDBCConnector;
+import de.xab.porter.transfer.exception.ConnectionException;
 import de.xab.porter.transfer.writer.AbstractWriter;
 
 import java.sql.*;
@@ -21,19 +24,21 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static de.xab.porter.api.dataconnection.SinkConnection.Properties.*;
+import static de.xab.porter.common.constant.Constant.*;
 import static de.xab.porter.common.util.Strings.notNullOrBlank;
 
 /**
  * common JDBC writer
  */
-public class JDBCWriter extends AbstractWriter implements JDBCConnector {
+public class JDBCWriter extends AbstractWriter {
+    protected Connection connection;
+    protected HikariDataSource dataSource;
     private final Logger logger = Loggers.getLogger(this.getClass());
 
     @Override
-    public void createTable(DataConnection dataConnection, Object connection, Result<?> data) {
-        SinkConnection sinkConnection = (SinkConnection) dataConnection;
-        SinkConnection.Properties properties = sinkConnection.getProperties();
-        String tableIdentifier = getTableIdentifier(sinkConnection);
+    public void createTable(Result<?> data) {
+        SinkConnection.Properties properties = this.sinkConnection.getProperties();
+        String tableIdentifier = getTableIdentifier();
         String quote = properties.getQuote();
         List<Column> meta = ((Relation) data.getResult()).getMeta();
         logger.log(Level.FINE, String.format("meta of table %s is: \n%s", tableIdentifier, Jsons.toJson(meta)));
@@ -41,7 +46,7 @@ public class JDBCWriter extends AbstractWriter implements JDBCConnector {
         String ddl = getCreateDDL(tableIdentifier, quote, meta);
         //ddl end
         logger.log(Level.INFO, String.format("create table %s: \n\n%s\n", tableIdentifier, ddl));
-        try (Statement stmt = ((Connection) connection).createStatement()) {
+        try (Statement stmt = connection.createStatement()) {
             stmt.executeUpdate(ddl);
         } catch (SQLException e) {
             logger.log(Level.INFO, String.format("table %s create failed", tableIdentifier));
@@ -50,30 +55,29 @@ public class JDBCWriter extends AbstractWriter implements JDBCConnector {
     }
 
     @Override
-    protected void doWrite(DataConnection dataConnection, Object connection, Result<?> data) {
+    protected void doWrite(Result<?> data) {
         Relation relation = (Relation) data.getResult();
-        SinkConnection sinkConnection = (SinkConnection) dataConnection;
         SinkConnection.Properties properties = sinkConnection.getProperties();
-        Connection jdbcConnection = (Connection) connection;
         switch (properties.getWriteMode()) {
             case PREPARE_BATCH_MODE:
-                writeInPrepareBatchMode(jdbcConnection, relation, properties);
+                writeInPrepareBatchMode(relation);
                 break;
             case STATEMENT_BATCH_MODE:
-                writeInStatementBatchMode(jdbcConnection, relation, properties);
+                writeInStatementBatchMode(relation);
                 break;
             case STATEMENT_VALUES_MODE:
-                writeInValueMode(jdbcConnection, relation, properties);
+                writeInValueMode(relation);
                 break;
             default:
-                writeInDefaultMode(sinkConnection, jdbcConnection, data);
+                writeInDefaultMode(data);
         }
     }
 
     /**
      * write data with one insert SQL and multi rows
      */
-    protected void writeInValueMode(Connection connection, Relation relation, SinkConnection.Properties properties) {
+    protected void writeInValueMode(Relation relation) {
+        SinkConnection.Properties properties = this.sinkConnection.getProperties();
         String tableIdentifier = properties.getTableIdentifier();
         StringBuilder sqlBuilder =
                 new StringBuilder(String.format("INSERT INTO %s \n", tableIdentifier));
@@ -88,7 +92,7 @@ public class JDBCWriter extends AbstractWriter implements JDBCConnector {
                         map(Object::toString).
                         collect(Collectors.joining(", ")) + ")").
                 collect(Collectors.joining(", \n")));
-        try (Statement stmt = connection.createStatement()) {
+        try (Statement stmt = this.connection.createStatement()) {
             //DO NOT DEPEND ON THIS
             //returned by JDBC client, may not accurate
             int rowCount = stmt.executeUpdate(sqlBuilder.toString());
@@ -102,8 +106,8 @@ public class JDBCWriter extends AbstractWriter implements JDBCConnector {
     /**
      * write data in batch
      */
-    protected void writeInStatementBatchMode(Connection connection, Relation relation,
-                                             SinkConnection.Properties properties) {
+    protected void writeInStatementBatchMode(Relation relation) {
+        SinkConnection.Properties properties = this.sinkConnection.getProperties();
         String tableIdentifier = properties.getTableIdentifier();
         StringBuilder sqlBuilder =
                 new StringBuilder(String.format("INSERT INTO %s ", tableIdentifier));
@@ -113,9 +117,11 @@ public class JDBCWriter extends AbstractWriter implements JDBCConnector {
                     collect(Collectors.joining(", "))).append(")");
         }
         String prefix = sqlBuilder.append("VALUES(").toString();
-        try (Statement statement = connection.createStatement()) {
+        try (Statement statement = this.connection.createStatement()) {
             for (List<?> row : relation.getData()) {
-                String insert = prefix + row.stream().map(Object::toString).collect(Collectors.joining(", ")) + ")";
+                String insert = prefix + row.stream().
+                        map(Object::toString).
+                        collect(Collectors.joining(", ")) + ")";
                 statement.addBatch(insert);
             }
             int[] result = statement.executeBatch();
@@ -129,8 +135,8 @@ public class JDBCWriter extends AbstractWriter implements JDBCConnector {
     /**
      * write data in batch with prepared statement
      */
-    protected void writeInPrepareBatchMode(Connection connection, Relation relation,
-                                           SinkConnection.Properties properties) {
+    protected void writeInPrepareBatchMode(Relation relation) {
+        SinkConnection.Properties properties = this.sinkConnection.getProperties();
         String tableIdentifier = properties.getTableIdentifier();
         StringBuilder sqlBuilder =
                 new StringBuilder(String.format("INSERT INTO %s \n", tableIdentifier));
@@ -143,7 +149,7 @@ public class JDBCWriter extends AbstractWriter implements JDBCConnector {
         sqlBuilder.append("(").append(
                 relation.getMeta().stream().map(row -> "?").collect(Collectors.joining(", "))).
                 append(")");
-        try (PreparedStatement statement = connection.prepareStatement(sqlBuilder.toString())) {
+        try (PreparedStatement statement = this.connection.prepareStatement(sqlBuilder.toString())) {
             for (List<?> row : relation.getData()) {
                 for (int i = 0; i < row.size(); i++) {
                     statement.setObject(i + 1, row.get(i),
@@ -162,15 +168,14 @@ public class JDBCWriter extends AbstractWriter implements JDBCConnector {
     /**
      * write in default mode, each data source has its implements
      */
-    protected void writeInDefaultMode(SinkConnection sinkConnection, Connection jdbcConnection, Result<?> data) {
-        writeInValueMode(jdbcConnection, (Relation) data.getResult(), sinkConnection.getProperties());
+    protected void writeInDefaultMode(Result<?> data) {
+        writeInValueMode((Relation) data.getResult());
     }
 
     @Override
-    public void dropTable(DataConnection dataConnection, Object connection) {
-        SinkConnection sinkConnection = (SinkConnection) dataConnection;
-        String tableIdentifier = getTableIdentifier(sinkConnection);
-        try (Statement stmt = ((Connection) connection).createStatement()) {
+    public void dropTable() {
+        String tableIdentifier = getTableIdentifier();
+        try (Statement stmt = connection.createStatement()) {
             String ddl = String.format("DROP TABLE IF EXISTS %s", tableIdentifier);
             logger.log(Level.INFO, String.format("drop table %s: %s", tableIdentifier, ddl));
             stmt.executeUpdate(ddl);
@@ -180,9 +185,9 @@ public class JDBCWriter extends AbstractWriter implements JDBCConnector {
     }
 
     @Override
-    public String getIdentifierQuote(Object connection) {
+    public String getIdentifierQuote() {
         try {
-            return ((Connection) connection).getMetaData().getIdentifierQuoteString();
+            return this.connection.getMetaData().getIdentifierQuoteString();
         } catch (SQLException e) {
             throw new PorterException("read quote from JDBC meta data failed", e);
         }
@@ -283,5 +288,70 @@ public class JDBCWriter extends AbstractWriter implements JDBCConnector {
             default:
                 return columnTypeName;
         }
+    }
+
+    @Override
+    public void connect(DataConnection dataConnection) throws ConnectionException {
+        this.sinkConnection = (SinkConnection) dataConnection;
+        try {
+            logger.log(Level.INFO, String.format("connecting to %s %s...",
+                    dataConnection.getType(), dataConnection.getUrl()));
+            this.dataSource = getDataSource(dataConnection);
+            this.connection = this.dataSource.getConnection();
+        } catch (SQLException | HikariPool.PoolInitializationException exception) {
+            throw new ConnectionException(String.format("connect to %s %s failed",
+                    dataConnection.getType(), dataConnection.getUrl()), exception);
+        }
+    }
+
+    @Override
+    public void close() {
+        logger.log(Level.INFO, String.format("closing connection to %s...", this.sinkConnection));
+        try {
+            if (this.connection != null && closed()) {
+                this.connection.close();
+            }
+            if (this.dataSource != null) {
+                this.dataSource.close();
+            }
+        } catch (SQLException e) {
+            throw new PorterException("connection close failed", e);
+        }
+    }
+
+    @Override
+    public boolean closed() {
+        boolean closed;
+        try {
+            closed = connection.isClosed();
+        } catch (SQLException e) {
+            throw new PorterException("JDBC connection close failed", e);
+        }
+        return closed;
+    }
+
+    private HikariDataSource getDataSource(DataConnection dataConnection) {
+        HikariConfig hikariConfig = new HikariConfig();
+        String jdbcURL = getJDBCUrl(dataConnection);
+        hikariConfig.setJdbcUrl(jdbcURL);
+        hikariConfig.setUsername(dataConnection.getUsername());
+        hikariConfig.setPassword(dataConnection.getPassword());
+        hikariConfig.setCatalog(dataConnection.getCatalog());
+        hikariConfig.setSchema(dataConnection.getSchema());
+        hikariConfig.setConnectionTimeout(DEFAULT_CONNECTION_TIMEOUT);
+        hikariConfig.setValidationTimeout(DEFAULT_VALIDATION_TIMEOUT);
+        hikariConfig.setMaxLifetime(DEFAULT_MAX_LIFE_TIME);
+        hikariConfig.setIdleTimeout(DEFAULT_IDLE_TIMEOUT);
+        hikariConfig.setConnectionTestQuery("SELECT 1");
+        hikariConfig.setKeepaliveTime(DEFAULT_KEEP_ALIVE_TIME);
+        return new HikariDataSource(hikariConfig);
+    }
+
+    /**
+     * get JDBC url for JDBC connection
+     */
+    public String getJDBCUrl(DataConnection dataConnection) {
+        String schema = dataConnection.getCatalog() == null ? dataConnection.getSchema() : dataConnection.getCatalog();
+        return String.format("jdbc:%s://%s/%s", getType(), dataConnection.getUrl(), schema);
     }
 }

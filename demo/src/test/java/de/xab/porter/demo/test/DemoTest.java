@@ -55,7 +55,7 @@ public class DemoTest {
     }
 
     @Test
-    public void testNewReader() {
+    public void testNewDataSource() {
         Session session = new Session();
         Context context = new Context();
         SrcConnection srcConn = ((SrcConnection.Builder) new SrcConnection.Builder().

@@ -115,10 +115,9 @@ public class ExtensionLoader<T> {
         throw new IOException("no appropriate type found for " + this.service);
     }
 
-    private Map.Entry<String, String> parseLine(String origin) {
+    private Map.Entry<String, String> parseLine(String line) {
         String extensionType;
         String extensionName;
-        String line = origin;
         int ci = line.indexOf('#');
         if (ci >= 0) {
             line = line.substring(0, ci);
