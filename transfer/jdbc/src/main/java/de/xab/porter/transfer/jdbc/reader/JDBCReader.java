@@ -13,6 +13,8 @@ import de.xab.porter.common.util.Loggers;
 import de.xab.porter.transfer.exception.ConnectionException;
 import de.xab.porter.transfer.reader.AbstractReader;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.*;
 import java.time.Duration;
 import java.time.Instant;
@@ -20,7 +22,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static de.xab.porter.common.constant.Constant.*;
+import static de.xab.porter.common.constant.Constant.DEFAULT_BATCH_SIZE;
 import static de.xab.porter.common.enums.SequenceEnum.*;
 import static de.xab.porter.common.util.Strings.notNullOrBlank;
 import static java.sql.ResultSet.CONCUR_READ_ONLY;
@@ -70,11 +72,6 @@ public class JDBCReader extends AbstractReader {
             //last data container not fill up with batch size
             pushLastBatch(meta, seq, relation);
         } catch (SQLException exception) {
-            try {
-                connection.close();
-            } catch (SQLException e) {
-                logger.log(Level.WARNING, "close connection failed");
-            }
             throw new PorterException("read data from JDBC connection failed", exception);
         } finally {
             Instant end = Instant.now();
@@ -82,11 +79,11 @@ public class JDBCReader extends AbstractReader {
             logger.log(Level.INFO, String.format(
                     "read completed. %s rows have been read, cost %s second(s)", batch, seconds));
             try {
-                if (statement != null) {
-                    statement.close();
-                }
                 if (resultSet != null) {
                     resultSet.close();
+                }
+                if (statement != null) {
+                    statement.close();
                 }
             } catch (SQLException exception) {
                 logger.log(Level.WARNING, "close JDBC connection failed");
@@ -210,6 +207,8 @@ public class JDBCReader extends AbstractReader {
             throw new ConnectionException(String.format("connect to %s %s failed",
                     dataConnection.getType(), dataConnection.getUrl()), exception);
         }
+        logger.log(Level.INFO, String.format("connected to %s %s...",
+                dataConnection.getType(), dataConnection.getUrl()));
     }
 
     @Override
@@ -247,19 +246,20 @@ public class JDBCReader extends AbstractReader {
     }
 
     private HikariDataSource getDataSource(DataConnection dataConnection) {
-        HikariConfig hikariConfig = new HikariConfig();
+        Properties props = new Properties();
+        try (InputStream resourceAsStream = this.getClass().getClassLoader().getResourceAsStream("hikari.properties")) {
+            props.load(resourceAsStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        HikariConfig hikariConfig = new HikariConfig(props);
         String jdbcURL = getJDBCUrl(dataConnection);
         hikariConfig.setJdbcUrl(jdbcURL);
         hikariConfig.setUsername(dataConnection.getUsername());
         hikariConfig.setPassword(dataConnection.getPassword());
         hikariConfig.setCatalog(dataConnection.getCatalog());
         hikariConfig.setSchema(dataConnection.getSchema());
-        hikariConfig.setConnectionTimeout(DEFAULT_CONNECTION_TIMEOUT);
-        hikariConfig.setValidationTimeout(DEFAULT_VALIDATION_TIMEOUT);
-        hikariConfig.setMaxLifetime(DEFAULT_MAX_LIFE_TIME);
-        hikariConfig.setIdleTimeout(DEFAULT_IDLE_TIMEOUT);
         hikariConfig.setConnectionTestQuery("SELECT 1");
-        hikariConfig.setKeepaliveTime(DEFAULT_KEEP_ALIVE_TIME);
         return new HikariDataSource(hikariConfig);
     }
 }

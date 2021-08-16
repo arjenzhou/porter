@@ -20,24 +20,23 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 public class DemoTest {
     private final int rows = 4;
-    private final String url = "jdbc:h2:~/porter";
     private final String type = "demo";
+    private final String catalog = "porter";
     private final String schema = "PUBLIC";
     private final String table = "mock_table";
+    private final String url = String.format("jdbc:h2:mem:%s;DB_CLOSE_DELAY=-1", catalog);
     private final Logger logger = Logger.getLogger(this.getClass().getName());
 
     @BeforeEach
     private void createH2Table() {
-        final String drop = "DROP TABLE IF EXISTS " + table;
-
-        final String ddl = "CREATE TABLE " + table
+        String ddl = "CREATE TABLE " + table
                 + "(id INTEGER not NULL, "
                 + " first VARCHAR(255), "
                 + " last VARCHAR(255), "
                 + " age INTEGER, "
                 + " PRIMARY KEY ( id ))";
 
-        final String sql = "INSERT INTO " + table + " VALUES "
+        String sql = "INSERT INTO " + table + " VALUES "
                 + "(100, 'Zara', 'Ali', 18), "
                 + "(101, 'Mahnaz', 'Fatma', 25), "
                 + "(102, 'Zaid', 'Khan', 30), "
@@ -45,9 +44,8 @@ public class DemoTest {
 
         try (Connection connection = DriverManager.getConnection(url, "", "");
              Statement statement = connection.createStatement()) {
-            statement.executeUpdate(drop);
             statement.executeUpdate(ddl);
-            final int i = statement.executeUpdate(sql);
+            int i = statement.executeUpdate(sql);
             assert i == rows;
         } catch (SQLException exception) {
             logger.log(Level.SEVERE, exception.getMessage());
@@ -62,6 +60,7 @@ public class DemoTest {
                 type(type).
                 username("").
                 password("").
+                catalog(catalog).
                 schema(schema).
                 table(table)).
                 build();
@@ -70,6 +69,7 @@ public class DemoTest {
                 type(type).
                 username("").
                 password("").
+                catalog(catalog).
                 schema(schema).
                 table(table + "_tmp")).
                 properties(
@@ -89,11 +89,11 @@ public class DemoTest {
     private int getRows() {
         try (Connection connection = DriverManager.getConnection(url, "", "");
              Statement statement = connection.createStatement()) {
-            final ResultSet resultSet = statement.executeQuery("SELECT * FROM \"PUBLIC\".\"mock_table_tmp\"");
-            final int columnCount = resultSet.getMetaData().getColumnCount();
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM \"" + schema + "\".\"" + table + "_tmp" + "\"");
+            int columnCount = resultSet.getMetaData().getColumnCount();
             int row = 0;
             while (resultSet.next()) {
-                final StringBuilder res = new StringBuilder();
+                StringBuilder res = new StringBuilder();
                 for (int i = 0; i < columnCount; i++) {
                     res.append(resultSet.getString(i + 1)).append(" ");
                 }

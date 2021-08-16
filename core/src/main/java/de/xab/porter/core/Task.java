@@ -81,9 +81,10 @@ public class Task {
             reader.connect(context.getSrcConnection());
             reader.read();
         } catch (ConnectionException e) {
-            logger.log(Level.WARNING, "reader connection failed" + e.getCause());
+            logger.log(Level.WARNING, "reader connection failed " + e.getCause());
         } finally {
             reader.close();
+            writers.forEach(writer -> writer.getKey().close());
         }
     }
 }
