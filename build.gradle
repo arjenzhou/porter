@@ -1,21 +1,5 @@
 group 'de.0xab'
-version project.property('porter-version')
-
-ext {
-    //plugin version
-    checkstylePlugin = '8.44'
-    //test dependencies version
-    jupiter = '5.7.0'
-    mockito = '3.11.2'
-    h2 = '1.4.200'
-    //dependencies version
-    jackson = '2.12.4'
-    hikari = '4.0.3'
-    clickhouse = '0.3.1-patch'
-    mysql = '8.0.25'
-    mariadb = '3.0.0-alpha'
-    postgresql = '42.2.23'
-}
+version "$porter"
 
 buildscript {
     repositories {
@@ -28,7 +12,7 @@ buildscript {
 allprojects {
     apply plugin: 'java'
     apply plugin: 'jacoco'
-    apply from: rootDir.path + '/gradle/checkstyle.gradle'
+    apply from: rootDir.path + '/codestyle/checkstyle.gradle'
 
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
@@ -45,11 +29,16 @@ repositories {
 
 subprojects {
     dependencies {
-        testImplementation 'org.junit.jupiter:junit-jupiter-api:' + property('jupiter')
-        testImplementation 'org.mockito:mockito-core:' + property('mockito')
-        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:' + property('jupiter')
+        testImplementation "org.junit.jupiter:junit-jupiter-api:$jupiter"
+        testImplementation "org.mockito:mockito-core:$mockito"
+        testImplementation "org.slf4j:slf4j-simple:$slf4j"
+        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$jupiter"
     }
     test.useJUnitPlatform()
+}
+
+wrapper {
+    gradleVersion = "$gradleWrapper"
 }
 
 task codeCoverageReport(type: JacocoReport) {
@@ -60,9 +49,9 @@ task codeCoverageReport(type: JacocoReport) {
     }
 
     reports {
-        xml.enabled true
-        html.enabled false
-        csv.enabled false
+        xml.required.value true
+        html.required.value false
+        csv.required.value false
     }
 }
 

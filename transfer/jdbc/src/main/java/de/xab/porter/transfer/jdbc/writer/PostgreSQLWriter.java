@@ -101,6 +101,7 @@ public class PostgreSQLWriter extends JDBCWriter {
     @Override
     protected String getColumnType(Column column) {
         switch (column.getColumnType()) {
+            case INTEGER:
             case TIMESTAMP:
                 return column.getColumnType().getName();
             default:

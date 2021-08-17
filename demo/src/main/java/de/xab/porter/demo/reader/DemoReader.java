@@ -9,6 +9,6 @@ import de.xab.porter.transfer.jdbc.reader.JDBCReader;
 public class DemoReader extends JDBCReader {
     @Override
     public String getJDBCUrl(DataConnection dataConnection) {
-        return "jdbc:h2:~/porter";
+        return String.format("jdbc:h2:mem:%s", dataConnection.getCatalog());
     }
 }

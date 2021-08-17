@@ -3,11 +3,11 @@ dependencies {
     implementation project(':common')
     implementation project(':transfer')
 
-    implementation group: 'com.zaxxer', name: 'HikariCP', version: property('hikari')
-    implementation(group: 'ru.yandex.clickhouse', name: 'clickhouse-jdbc', version: property('clickhouse')) {
+    implementation "com.zaxxer:HikariCP:$hikari"
+    implementation("ru.yandex.clickhouse:clickhouse-jdbc:$clickhouse") {
         exclude(group: 'com.fasterxml.jackson.core')
     }
-    implementation group: 'mysql', name: 'mysql-connector-java', version: property('mysql')
-    implementation group: 'org.mariadb.jdbc', name: 'mariadb-java-client', version: property('mariadb')
-    implementation group: 'org.postgresql', name: 'postgresql', version: property('postgresql')
+    implementation "mysql:mysql-connector-java:$mysql"
+    implementation "org.mariadb.jdbc:mariadb-java-client:$mariadb"
+    implementation "org.postgresql:postgresql:$postgresql"
 }

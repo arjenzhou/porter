@@ -14,17 +14,15 @@ import de.xab.porter.common.util.Loggers;
 import de.xab.porter.transfer.exception.ConnectionException;
 import de.xab.porter.transfer.writer.AbstractWriter;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.*;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static de.xab.porter.api.dataconnection.SinkConnection.Properties.*;
-import static de.xab.porter.common.constant.Constant.*;
 import static de.xab.porter.common.util.Strings.notNullOrBlank;
 
 /**
@@ -42,9 +40,7 @@ public class JDBCWriter extends AbstractWriter {
         String quote = properties.getQuote();
         List<Column> meta = ((Relation) data.getResult()).getMeta();
         logger.log(Level.FINE, String.format("meta of table %s is: \n%s", tableIdentifier, Jsons.toJson(meta)));
-        //ddl
         String ddl = getCreateDDL(tableIdentifier, quote, meta);
-        //ddl end
         logger.log(Level.INFO, String.format("create table %s: \n\n%s\n", tableIdentifier, ddl));
         try (Statement stmt = connection.createStatement()) {
             stmt.executeUpdate(ddl);
@@ -147,7 +143,7 @@ public class JDBCWriter extends AbstractWriter {
         }
         sqlBuilder.append("VALUES\n");
         sqlBuilder.append("(").append(
-                relation.getMeta().stream().map(row -> "?").collect(Collectors.joining(", "))).
+                        relation.getMeta().stream().map(row -> "?").collect(Collectors.joining(", "))).
                 append(")");
         try (PreparedStatement statement = this.connection.prepareStatement(sqlBuilder.toString())) {
             for (List<?> row : relation.getData()) {
@@ -302,6 +298,8 @@ public class JDBCWriter extends AbstractWriter {
             throw new ConnectionException(String.format("connect to %s %s failed",
                     dataConnection.getType(), dataConnection.getUrl()), exception);
         }
+        logger.log(Level.INFO, String.format("connected to %s %s...",
+                dataConnection.getType(), dataConnection.getUrl()));
     }
 
     @Override
@@ -331,19 +329,20 @@ public class JDBCWriter extends AbstractWriter {
     }
 
     private HikariDataSource getDataSource(DataConnection dataConnection) {
-        HikariConfig hikariConfig = new HikariConfig();
+        Properties props = new Properties();
+        try (InputStream resourceAsStream = this.getClass().getClassLoader().
+                getResourceAsStream("hikari.properties")) {
+            props.load(resourceAsStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        HikariConfig hikariConfig = new HikariConfig(props);
         String jdbcURL = getJDBCUrl(dataConnection);
         hikariConfig.setJdbcUrl(jdbcURL);
         hikariConfig.setUsername(dataConnection.getUsername());
         hikariConfig.setPassword(dataConnection.getPassword());
         hikariConfig.setCatalog(dataConnection.getCatalog());
         hikariConfig.setSchema(dataConnection.getSchema());
-        hikariConfig.setConnectionTimeout(DEFAULT_CONNECTION_TIMEOUT);
-        hikariConfig.setValidationTimeout(DEFAULT_VALIDATION_TIMEOUT);
-        hikariConfig.setMaxLifetime(DEFAULT_MAX_LIFE_TIME);
-        hikariConfig.setIdleTimeout(DEFAULT_IDLE_TIMEOUT);
-        hikariConfig.setConnectionTestQuery("SELECT 1");
-        hikariConfig.setKeepaliveTime(DEFAULT_KEEP_ALIVE_TIME);
         return new HikariDataSource(hikariConfig);
     }
 

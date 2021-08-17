@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * <p>
  * comments after # will be ignored
  */
+@SuppressWarnings("unchecked")
 public class ExtensionLoader<T> {
     private static final String FOLDER = "META-INF/porter/";
     private static final Map<Class<?>, ExtensionLoader<?>> LOADERS = new ConcurrentHashMap<>();

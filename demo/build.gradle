@@ -3,5 +3,5 @@ dependencies {
     implementation project(':core')
     implementation project(':transfer:jdbc')
 
-    implementation group: 'com.h2database', name: 'h2', version: property('h2')
+    implementation "com.h2database:h2:$h2"
 }
