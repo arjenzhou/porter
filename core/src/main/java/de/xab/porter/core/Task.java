@@ -21,8 +21,8 @@ import java.util.stream.Collectors;
  * atomic unit of a transmission action, may split up by {@link Session}
  */
 public class Task {
-    private Logger logger = Loggers.getLogger(this.getClass());
-    private Context context;
+    private final Logger logger = Loggers.getLogger(this.getClass());
+    private final Context context;
     private Reader reader;
     private List<Map.Entry<Writer, Channel>> writers;
 

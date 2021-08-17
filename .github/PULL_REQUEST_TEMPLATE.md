@@ -8,7 +8,7 @@
 
 <!-- Follow this checklist to help us incorporate your contribution quickly and easily: -->
 
-- [x] Make sure there is a [GitHub_issue](https://github.com/arjenzhou/porter/issues) field for the change (usually
+- [x] Make sure there is a [ISSUE](https://github.com/arjenzhou/porter/issues) field for the change (usually
   before you start working on it). Trivial changes like typos do not require a GitHub issue. Your pull request should
   address just this issue, without pulling in other changes - one PR resolves one issue.
 - [ ] Each commit in the pull request should have a meaningful subject line and body.
