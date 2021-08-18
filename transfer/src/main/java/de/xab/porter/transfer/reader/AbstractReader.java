@@ -2,6 +2,7 @@ package de.xab.porter.transfer.reader;
 
 import de.xab.porter.api.Column;
 import de.xab.porter.api.Result;
+import de.xab.porter.api.dataconnection.DataConnection;
 import de.xab.porter.api.dataconnection.SrcConnection;
 import de.xab.porter.common.util.Loggers;
 import de.xab.porter.transfer.channel.Channel;
@@ -71,16 +72,6 @@ public abstract class AbstractReader implements Reader {
         this.channels = channels;
     }
 
-    @Override
-    public String getType() {
-        return this.type;
-    }
-
-    @Override
-    public void setType(String type) {
-        this.type = type;
-    }
-
     /**
      * add src conn properties by source's meta
      */
@@ -99,5 +90,15 @@ public abstract class AbstractReader implements Reader {
                     + this.srcConnection.getSchema() + "." + this.srcConnection.getTable();
             properties.setSql(sql);
         }
+    }
+
+    @Override
+    public void setDataConnection(DataConnection dataConnection) {
+        this.srcConnection = (SrcConnection) dataConnection;
+    }
+
+    @Override
+    public SrcConnection getDataConnection() {
+        return this.srcConnection;
     }
 }

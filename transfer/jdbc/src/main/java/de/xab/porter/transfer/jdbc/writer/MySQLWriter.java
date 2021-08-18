@@ -10,6 +10,7 @@ public class MySQLWriter extends JDBCWriter {
     @Override
     public String getJDBCUrl(DataConnection dataConnection) {
         String schema = dataConnection.getCatalog() == null ? dataConnection.getSchema() : dataConnection.getCatalog();
-        return String.format("jdbc:%s://%s/%s?allowLoadLocalInfile=true", getType(), dataConnection.getUrl(), schema);
+        return String.format("jdbc:%s://%s/%s?allowLoadLocalInfile=true",
+                dataConnection.getType(), dataConnection.getUrl(), schema);
     }
 }

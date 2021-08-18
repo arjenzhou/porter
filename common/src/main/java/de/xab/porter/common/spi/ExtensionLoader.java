@@ -55,9 +55,7 @@ public class ExtensionLoader<T> {
                     "cannot access class %s at %s", clazz.getName(), this.getClass().getModule()));
         }
         try {
-            T instance = clazz.getConstructor().newInstance();
-            injectExtension(instance, type);
-            return instance;
+            return clazz.getConstructor().newInstance();
         } catch (InstantiationException | NoSuchMethodException
                 | IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(String.format("cannot create extension %s of %s", type, this.service), e);

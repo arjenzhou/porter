@@ -2,5 +2,4 @@ dependencies {
     implementation project(':api')
 
     implementation "com.fasterxml.jackson.core:jackson-databind:$jackson"
-    implementation "cglib:cglib:$cglib"
 }
