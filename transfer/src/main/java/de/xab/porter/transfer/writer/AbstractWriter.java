@@ -1,6 +1,7 @@
 package de.xab.porter.transfer.writer;
 
 import de.xab.porter.api.Result;
+import de.xab.porter.api.dataconnection.DataConnection;
 import de.xab.porter.api.dataconnection.SinkConnection;
 import de.xab.porter.common.util.Loggers;
 import de.xab.porter.transfer.channel.Channel;
@@ -84,12 +85,12 @@ public abstract class AbstractWriter implements Writer {
     }
 
     @Override
-    public String getType() {
-        return this.type;
+    public void setDataConnection(DataConnection dataConnection) {
+        this.sinkConnection = (SinkConnection) dataConnection;
     }
 
     @Override
-    public void setType(String type) {
-        this.type = type;
+    public SinkConnection getDataConnection() {
+        return this.sinkConnection;
     }
 }

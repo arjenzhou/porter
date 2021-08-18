@@ -26,7 +26,7 @@ public interface Connector {
         return true;
     }
 
-    String getType();
+    void setDataConnection(DataConnection dataConnection);
 
-    void setType(String type);
+    DataConnection getDataConnection();
 }

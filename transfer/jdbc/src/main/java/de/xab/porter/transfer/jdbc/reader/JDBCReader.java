@@ -1,20 +1,15 @@
 package de.xab.porter.transfer.jdbc.reader;
 
-import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import com.zaxxer.hikari.pool.HikariPool;
 import de.xab.porter.api.Column;
 import de.xab.porter.api.Relation;
 import de.xab.porter.api.Result;
-import de.xab.porter.api.dataconnection.DataConnection;
 import de.xab.porter.api.dataconnection.SrcConnection;
 import de.xab.porter.api.exception.PorterException;
 import de.xab.porter.common.util.Loggers;
-import de.xab.porter.transfer.exception.ConnectionException;
+import de.xab.porter.transfer.jdbc.connector.JDBCConnector;
 import de.xab.porter.transfer.reader.AbstractReader;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.sql.*;
 import java.time.Duration;
 import java.time.Instant;
@@ -31,8 +26,8 @@ import static java.sql.ResultSet.TYPE_FORWARD_ONLY;
 /**
  * common JDBC reader
  */
-public class JDBCReader extends AbstractReader {
-    protected HikariDataSource dataSource;
+public class JDBCReader extends AbstractReader implements JDBCConnector {
+    protected HikariDataSource datasource;
     protected Connection connection;
     private final Logger logger = Loggers.getLogger(this.getClass());
 
@@ -196,70 +191,22 @@ public class JDBCReader extends AbstractReader {
     }
 
     @Override
-    public void connect(DataConnection dataConnection) throws ConnectionException {
-        this.srcConnection = (SrcConnection) dataConnection;
-        try {
-            logger.log(Level.INFO, String.format("connecting to %s %s...",
-                    dataConnection.getType(), dataConnection.getUrl()));
-            this.dataSource = getDataSource(dataConnection);
-            this.connection = this.dataSource.getConnection();
-        } catch (HikariPool.PoolInitializationException | SQLException exception) {
-            throw new ConnectionException(String.format("connect to %s %s failed",
-                    dataConnection.getType(), dataConnection.getUrl()), exception);
-        }
-        logger.log(Level.INFO, String.format("connected to %s %s...",
-                dataConnection.getType(), dataConnection.getUrl()));
+    public void setConnection(Connection connection) {
+        this.connection = connection;
     }
 
     @Override
-    public void close() {
-        logger.log(Level.INFO, String.format("closing connection to %s...", this.srcConnection));
-        try {
-            if (this.connection != null && closed()) {
-                this.connection.close();
-            }
-            if (this.dataSource != null) {
-                this.dataSource.close();
-            }
-        } catch (SQLException e) {
-            throw new PorterException("connection close failed", e);
-        }
+    public Connection getConnection() {
+        return this.connection;
     }
 
     @Override
-    public boolean closed() {
-        boolean closed;
-        try {
-            closed = connection.isClosed();
-        } catch (SQLException e) {
-            throw new PorterException("JDBC connection close failed", e);
-        }
-        return closed;
+    public void setDatasource(HikariDataSource datasource) {
+        this.datasource = datasource;
     }
 
-    /**
-     * get JDBC url for JDBC connection
-     */
-    public String getJDBCUrl(DataConnection dataConnection) {
-        String schema = dataConnection.getCatalog() == null ? dataConnection.getSchema() : dataConnection.getCatalog();
-        return String.format("jdbc:%s://%s/%s", getType(), dataConnection.getUrl(), schema);
-    }
-
-    private HikariDataSource getDataSource(DataConnection dataConnection) {
-        Properties props = new Properties();
-        try (InputStream resourceAsStream = this.getClass().getClassLoader().getResourceAsStream("hikari.properties")) {
-            props.load(resourceAsStream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        HikariConfig hikariConfig = new HikariConfig(props);
-        String jdbcURL = getJDBCUrl(dataConnection);
-        hikariConfig.setJdbcUrl(jdbcURL);
-        hikariConfig.setUsername(dataConnection.getUsername());
-        hikariConfig.setPassword(dataConnection.getPassword());
-        hikariConfig.setCatalog(dataConnection.getCatalog());
-        hikariConfig.setSchema(dataConnection.getSchema());
-        hikariConfig.setConnectionTestQuery("SELECT 1");
-        return new HikariDataSource(hikariConfig);
+    @Override
+    public HikariDataSource getDatasource() {
+        return datasource;
     }
 }
