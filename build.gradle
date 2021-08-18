@@ -38,15 +38,16 @@ wrapper {
 }
 
 task codeCoverageReport(type: JacocoReport) {
-    executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
+    dependsOn subprojects.test
+
+    executionData.from project.fileTree(dir: '.', include: '**/build/jacoco/test.exec')
+    sourceDirectories.from files(subprojects.sourceSets.main.allSource.srcDirs)
+    additionalSourceDirs.from files(subprojects.sourceSets.main.allSource.srcDirs)
+    classDirectories.from files(subprojects.sourceSets.main.output)
 
     reports {
         xml.required = true
-        html.required = false
         csv.required = false
+        html.required = false
     }
-}
-
-codeCoverageReport.dependsOn {
-    subprojects.test
 }
