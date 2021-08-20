@@ -1,13 +1,14 @@
 package de.xab.porter.transfer.jdbc.writer;
 
-import com.zaxxer.hikari.HikariDataSource;
 import de.xab.porter.api.Column;
 import de.xab.porter.api.Relation;
 import de.xab.porter.api.Result;
+import de.xab.porter.api.dataconnection.DataConnection;
 import de.xab.porter.api.dataconnection.SinkConnection;
 import de.xab.porter.api.exception.PorterException;
 import de.xab.porter.common.util.Jsons;
 import de.xab.porter.common.util.Loggers;
+import de.xab.porter.transfer.exception.ConnectionException;
 import de.xab.porter.transfer.jdbc.connector.JDBCConnector;
 import de.xab.porter.transfer.writer.AbstractWriter;
 
@@ -26,14 +27,12 @@ import static de.xab.porter.common.util.Strings.notNullOrBlank;
 /**
  * common JDBC writer
  */
-public class JDBCWriter extends AbstractWriter implements JDBCConnector {
-    protected Connection connection;
-    protected HikariDataSource datasource;
+public class JDBCWriter extends AbstractWriter<Connection> implements JDBCConnector {
     private final Logger logger = Loggers.getLogger(this.getClass());
 
     @Override
     public void createTable(Result<?> data) {
-        SinkConnection.Properties properties = this.sinkConnection.getProperties();
+        SinkConnection.Properties properties = ((SinkConnection) getConnector().getDataConnection()).getProperties();
         String tableIdentifier = getTableIdentifier();
         String quote = properties.getQuote();
         List<Column> meta = ((Relation) data.getResult()).getMeta();
@@ -51,7 +50,7 @@ public class JDBCWriter extends AbstractWriter implements JDBCConnector {
     @Override
     protected void doWrite(Result<?> data) {
         Relation relation = (Relation) data.getResult();
-        SinkConnection.Properties properties = sinkConnection.getProperties();
+        SinkConnection.Properties properties = ((SinkConnection) getConnector().getDataConnection()).getProperties();
         switch (properties.getWriteMode()) {
             case PREPARE_BATCH_MODE:
                 writeInPrepareBatchMode(relation);
@@ -71,7 +70,7 @@ public class JDBCWriter extends AbstractWriter implements JDBCConnector {
      * write data with one insert SQL and multi rows
      */
     protected void writeInValueMode(Relation relation) {
-        SinkConnection.Properties properties = this.sinkConnection.getProperties();
+        SinkConnection.Properties properties = ((SinkConnection) getConnector().getDataConnection()).getProperties();
         String tableIdentifier = properties.getTableIdentifier();
         StringBuilder sqlBuilder =
                 new StringBuilder(String.format("INSERT INTO %s \n", tableIdentifier));
@@ -101,7 +100,7 @@ public class JDBCWriter extends AbstractWriter implements JDBCConnector {
      * write data in batch
      */
     protected void writeInStatementBatchMode(Relation relation) {
-        SinkConnection.Properties properties = this.sinkConnection.getProperties();
+        SinkConnection.Properties properties = ((SinkConnection) getConnector().getDataConnection()).getProperties();
         String tableIdentifier = properties.getTableIdentifier();
         StringBuilder sqlBuilder =
                 new StringBuilder(String.format("INSERT INTO %s ", tableIdentifier));
@@ -130,7 +129,7 @@ public class JDBCWriter extends AbstractWriter implements JDBCConnector {
      * write data in batch with prepared statement
      */
     protected void writeInPrepareBatchMode(Relation relation) {
-        SinkConnection.Properties properties = this.sinkConnection.getProperties();
+        SinkConnection.Properties properties = ((SinkConnection) getConnector().getDataConnection()).getProperties();
         String tableIdentifier = properties.getTableIdentifier();
         StringBuilder sqlBuilder =
                 new StringBuilder(String.format("INSERT INTO %s \n", tableIdentifier));
@@ -198,6 +197,13 @@ public class JDBCWriter extends AbstractWriter implements JDBCConnector {
     }
 
     /**
+     * generate create header
+     */
+    protected String getCreate(String tableIdentifier) {
+        return String.format("CREATE TABLE IF NOT EXISTS %s (\n", tableIdentifier);
+    }
+
+    /**
      * generate column part of create DDL
      */
     protected String getColumns(List<Column> meta, String quote) {
@@ -228,13 +234,6 @@ public class JDBCWriter extends AbstractWriter implements JDBCConnector {
      */
     protected String getAfterDDL(String tableIdentifier, String quote, List<Column> meta) {
         return "";
-    }
-
-    /**
-     * generate create header
-     */
-    protected String getCreate(String tableIdentifier) {
-        return String.format("CREATE TABLE IF NOT EXISTS %s (\n", tableIdentifier);
     }
 
     /**
@@ -285,22 +284,9 @@ public class JDBCWriter extends AbstractWriter implements JDBCConnector {
     }
 
     @Override
-    public void setConnection(Connection connection) {
-        this.connection = connection;
-    }
-
-    @Override
-    public Connection getConnection() {
+    public Connection connect(DataConnection dataConnection) throws ConnectionException {
+        SinkConnection sinkConnection = (SinkConnection) dataConnection;
+        this.connection = (Connection) getConnector().connect(sinkConnection, getJDBCUrl(sinkConnection));
         return this.connection;
-    }
-
-    @Override
-    public void setDatasource(HikariDataSource datasource) {
-        this.datasource = datasource;
-    }
-
-    @Override
-    public HikariDataSource getDatasource() {
-        return datasource;
     }
 }

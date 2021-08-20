@@ -5,6 +5,7 @@ package de.xab.porter.api.dataconnection;
  * {@link SrcConnection} {@link SinkConnection}
  */
 public class DataConnection {
+    private String connectorType;
     private String type;
     private String url;
     private String username;
@@ -17,6 +18,7 @@ public class DataConnection {
     }
 
     protected DataConnection(AbstractBuilder<?> builder) {
+        this.connectorType = builder.connectorType;
         this.type = builder.type;
         this.url = builder.url;
         this.username = builder.username;
@@ -27,6 +29,14 @@ public class DataConnection {
     }
 
     //setter and getter
+    public String getConnectorType() {
+        return connectorType;
+    }
+
+    public void setConnectorType(String connectorType) {
+        this.connectorType = connectorType;
+    }
+
     public String getType() {
         return type;
     }
@@ -87,6 +97,7 @@ public class DataConnection {
      * builder
      */
     public abstract static class AbstractBuilder<T extends DataConnection> {
+        private String connectorType;
         private String type;
         private String url;
         private String username;
@@ -94,6 +105,11 @@ public class DataConnection {
         private String catalog;
         private String schema;
         private String table;
+
+        public AbstractBuilder<T> connectorType(String connectorType) {
+            this.connectorType = connectorType;
+            return this;
+        }
 
         public AbstractBuilder<T> type(String type) {
             this.type = type;

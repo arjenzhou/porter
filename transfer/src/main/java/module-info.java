@@ -3,7 +3,7 @@ module de.xab.porter.transfer {
     requires de.xab.porter.common;
     requires java.sql;
 
-    exports de.xab.porter.transfer.connection;
+    exports de.xab.porter.transfer.connector;
     exports de.xab.porter.transfer.channel;
     exports de.xab.porter.transfer.reader;
     exports de.xab.porter.transfer.writer;

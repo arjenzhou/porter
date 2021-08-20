@@ -1,12 +1,13 @@
 package de.xab.porter.transfer.jdbc.reader;
 
-import com.zaxxer.hikari.HikariDataSource;
 import de.xab.porter.api.Column;
 import de.xab.porter.api.Relation;
 import de.xab.porter.api.Result;
+import de.xab.porter.api.dataconnection.DataConnection;
 import de.xab.porter.api.dataconnection.SrcConnection;
 import de.xab.porter.api.exception.PorterException;
 import de.xab.porter.common.util.Loggers;
+import de.xab.porter.transfer.exception.ConnectionException;
 import de.xab.porter.transfer.jdbc.connector.JDBCConnector;
 import de.xab.porter.transfer.reader.AbstractReader;
 
@@ -26,14 +27,13 @@ import static java.sql.ResultSet.TYPE_FORWARD_ONLY;
 /**
  * common JDBC reader
  */
-public class JDBCReader extends AbstractReader implements JDBCConnector {
-    protected HikariDataSource datasource;
-    protected Connection connection;
+public class JDBCReader extends AbstractReader<Connection> implements JDBCConnector {
     private final Logger logger = Loggers.getLogger(this.getClass());
 
     @Override
     public void doRead(Map<String, Column> columnMap) {
-        SrcConnection.Properties properties = this.srcConnection.getProperties();
+        SrcConnection srcConnection = (SrcConnection) getConnector().getDataConnection();
+        SrcConnection.Properties properties = srcConnection.getProperties();
         Statement statement = null;
         ResultSet resultSet = null;
         Instant start = Instant.now();
@@ -59,7 +59,7 @@ public class JDBCReader extends AbstractReader implements JDBCConnector {
                 relation.getData().add(row);
                 if (batch % DEFAULT_BATCH_SIZE == 0) {
                     logger.log(Level.INFO, String.format("read %d rows from %s %s",
-                            batch, this.srcConnection.getType(), this.srcConnection.getUrl()));
+                            batch, srcConnection.getType(), srcConnection.getUrl()));
                     this.pushToChannel(new Result<>(seq++, relation));
                     relation = new Relation(meta);
                 }
@@ -88,7 +88,7 @@ public class JDBCReader extends AbstractReader implements JDBCConnector {
 
     @Override
     public Map<String, Column> getTableMetaData() {
-        SrcConnection srcConnection = this.srcConnection;
+        SrcConnection srcConnection = (SrcConnection) getConnector().getDataConnection();
         Connection connection = this.connection;
         //keep insertion order
         Map<String, Column> columnMap = new LinkedHashMap<>();
@@ -150,11 +150,12 @@ public class JDBCReader extends AbstractReader implements JDBCConnector {
      */
     private void fillResultSetMeta(Map<String, Column> columnMap,
                                    ResultSetMetaData metaData, int columnCount) throws SQLException {
+        SrcConnection srcConnection = (SrcConnection) getConnector().getDataConnection();
         for (int i = 1; i <= columnCount; i++) {
             String name = metaData.getColumnName(i);
             Column column = columnMap.compute(name, (key, oldValue) ->
                     Objects.requireNonNullElseGet(oldValue, () -> new Column(name)));
-            if (this.srcConnection.getProperties().isCreate()) {
+            if (srcConnection.getProperties().isCreate()) {
                 int displaySize = metaData.getColumnDisplaySize(i);
                 boolean signed = metaData.isSigned(i);
                 int precision = metaData.getPrecision(i);
@@ -175,6 +176,7 @@ public class JDBCReader extends AbstractReader implements JDBCConnector {
     }
 
     private void pushLastBatch(List<Column> meta, long seq, Relation relation) {
+        SrcConnection srcConnection = (SrcConnection) getConnector().getDataConnection();
         if (!relation.getData().isEmpty()) {
             //only one batch
             seq = seq
@@ -186,27 +188,14 @@ public class JDBCReader extends AbstractReader implements JDBCConnector {
             relation = new Relation(meta);
         }
         logger.log(Level.INFO, String.format("read last %d scrap(s) from %s %s",
-                relation.getData().size(), this.srcConnection.getType(), this.srcConnection.getUrl()));
+                relation.getData().size(), srcConnection.getType(), srcConnection.getUrl()));
         this.pushToChannel(new Result<>(seq, relation));
     }
 
     @Override
-    public void setConnection(Connection connection) {
-        this.connection = connection;
-    }
-
-    @Override
-    public Connection getConnection() {
+    public Connection connect(DataConnection dataConnection) throws ConnectionException {
+        SrcConnection srcConnection = (SrcConnection) dataConnection;
+        this.connection = (Connection) getConnector().connect(srcConnection, getJDBCUrl(srcConnection));
         return this.connection;
-    }
-
-    @Override
-    public void setDatasource(HikariDataSource datasource) {
-        this.datasource = datasource;
-    }
-
-    @Override
-    public HikariDataSource getDatasource() {
-        return datasource;
     }
 }

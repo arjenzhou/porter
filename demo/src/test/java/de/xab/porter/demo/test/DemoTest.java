@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 public class DemoTest {
     private final int rows = 4;
+    private final String connectorType = "hikari";
     private final String type = "demo";
     private final String catalog = "porter";
     private final String schema = "PUBLIC";
@@ -57,6 +58,7 @@ public class DemoTest {
         Session session = new Session();
         Context context = new Context();
         SrcConnection srcConn = ((SrcConnection.Builder) new SrcConnection.Builder().
+                connectorType(connectorType).
                 type(type).
                 username("").
                 password("").
@@ -66,6 +68,7 @@ public class DemoTest {
                 build();
 
         SinkConnection sinkConnection = ((SinkConnection.Builder) new SinkConnection.Builder().
+                connectorType(connectorType).
                 type(type).
                 username("").
                 password("").

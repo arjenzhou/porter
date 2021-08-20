@@ -2,12 +2,12 @@ package de.xab.porter.transfer.writer;
 
 import de.xab.porter.api.Result;
 import de.xab.porter.transfer.channel.Channel;
-import de.xab.porter.transfer.connection.Connector;
+import de.xab.porter.transfer.connector.Connectable;
 
 /**
  * writer can write data to datasource
  */
-public interface Writer extends Connector {
+public interface Writer<T> extends Connectable<T> {
     /**
      * write data to sink data source, may contains operations before do write
      */
