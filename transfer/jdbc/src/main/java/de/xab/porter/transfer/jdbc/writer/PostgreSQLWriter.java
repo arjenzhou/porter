@@ -24,7 +24,7 @@ import static de.xab.porter.common.util.Strings.notNullOrBlank;
  * PostgreSQL JDBC writer
  */
 public class PostgreSQLWriter extends JDBCWriter {
-    private Logger logger = Loggers.getLogger(this.getClass());
+    private final Logger logger = Loggers.getLogger(this.getClass());
 
     @Override
     protected void writeInDefaultMode(Result<?> data) {
@@ -35,7 +35,7 @@ public class PostgreSQLWriter extends JDBCWriter {
      * using copy for postgreSQL
      */
     protected void writeInPostgreSQLFileMode(Result<?> data) {
-        SinkConnection.Properties properties = this.sinkConnection.getProperties();
+        SinkConnection.Properties properties = ((SinkConnection) getConnector().getDataConnection()).getProperties();
         Relation relation = (Relation) data.getResult();
         StringReader stringReader = null;
         String columns = "";
@@ -92,10 +92,11 @@ public class PostgreSQLWriter extends JDBCWriter {
 
     @Override
     protected String getTableIdentifier() {
-        String quote = this.sinkConnection.getProperties().getQuote();
-        return quote + this.sinkConnection.getCatalog() + quote + "."
-                + quote + this.sinkConnection.getSchema() + quote + "."
-                + quote + this.sinkConnection.getTable() + quote;
+        SinkConnection sinkConnection = (SinkConnection) getConnector().getDataConnection();
+        String quote = sinkConnection.getProperties().getQuote();
+        return quote + sinkConnection.getCatalog() + quote + "."
+                + quote + sinkConnection.getSchema() + quote + "."
+                + quote + sinkConnection.getTable() + quote;
     }
 
     @Override

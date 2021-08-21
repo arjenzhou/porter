@@ -2,18 +2,18 @@ package de.xab.porter.transfer.reader;
 
 import de.xab.porter.api.Result;
 import de.xab.porter.transfer.channel.Channel;
-import de.xab.porter.transfer.connection.Connector;
+import de.xab.porter.transfer.connector.Connectable;
 
 import java.util.List;
 
 /**
  * a reader can read data from data source
  */
-public interface Reader extends Connector {
+public interface Reader<T> extends Connectable<T> {
     /**
      * split source table into pieces
      */
-    List<Reader> split();
+    List<Reader<T>> split();
 
     /**
      * read data from reader

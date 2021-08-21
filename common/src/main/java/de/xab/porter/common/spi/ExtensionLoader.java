@@ -1,5 +1,7 @@
 package de.xab.porter.common.spi;
 
+import de.xab.porter.api.annoation.Inject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -48,20 +50,6 @@ public class ExtensionLoader<T> {
         return loader;
     }
 
-    public T loadExtension(String type) {
-        Class<T> clazz = loadExtensionClass(type);
-        if (!clazz.getModule().isOpen(clazz.getPackageName(), this.getClass().getModule())) {
-            throw new RuntimeException(String.format(
-                    "cannot access class %s at %s", clazz.getName(), this.getClass().getModule()));
-        }
-        try {
-            return clazz.getConstructor().newInstance();
-        } catch (InstantiationException | NoSuchMethodException
-                | IllegalAccessException | InvocationTargetException e) {
-            throw new RuntimeException(String.format("cannot create extension %s of %s", type, this.service), e);
-        }
-    }
-
     private Class<T> loadExtensionClass(String type) {
         Class<T> extensionClass = this.extensions.get(type);
         ClassLoader classLoader = findClassLoader(this.service);
@@ -79,14 +67,59 @@ public class ExtensionLoader<T> {
                         throw new IllegalArgumentException(
                                 String.format("cannot load class %s for %s: %s", extensionName, type, this.service));
                     }
-                    if (!implementedInterface(extensionClass, this.service)) {
+                    if (!isServiceImplementation(extensionClass, this.service)) {
                         throw new IllegalStateException(extensionName + " not implemented " + this.service);
                     }
                     this.extensions.put(type, extensionClass);
                 }
             }
         }
+        if (!extensionClass.getModule().isOpen(extensionClass.getPackageName(), this.getClass().getModule())) {
+            throw new RuntimeException(String.format(
+                    "cannot access class %s at %s", extensionClass.getName(), this.getClass().getModule()));
+        }
         return extensionClass;
+    }
+
+    public T loadExtension(String delegationType, String type) {
+        Class<T> clazz = loadExtensionClass(type);
+        T t;
+        try {
+            t = clazz.getConstructor().newInstance();
+        } catch (InstantiationException | NoSuchMethodException
+                | IllegalAccessException | InvocationTargetException e) {
+            throw new RuntimeException(String.format("cannot create extension %s of %s", type, this.service), e);
+        }
+        inject(clazz, t, delegationType);
+        return t;
+    }
+
+    /**
+     * inject dependencies on setter
+     */
+    private void inject(Class<T> clazz, T t, String delegationType) {
+        if (delegationType != null) {
+            for (Method method : clazz.getMethods()) {
+                Class<?> dependencyClass = null;
+                if (injectable(method)) {
+                    try {
+                        dependencyClass = method.getParameterTypes()[0];
+                        method.invoke(t, ExtensionLoader.getExtensionLoader(dependencyClass).
+                                loadExtension(null, delegationType));
+                    } catch (IllegalAccessException | InvocationTargetException e) {
+                        throw new RuntimeException(String.format("unable to inject %s to method %s",
+                                dependencyClass, method.getName()), e);
+                    }
+                }
+            }
+        }
+    }
+
+    private boolean injectable(Method method) {
+        return method.isAnnotationPresent(Inject.class)
+                && method.getName().startsWith("set")
+                && method.getParameterTypes().length == 1
+                && Modifier.isPublic(method.getModifiers());
     }
 
     private String findExtensionName(ClassLoader classLoader, String type) throws IOException {
@@ -133,7 +166,7 @@ public class ExtensionLoader<T> {
         return null;
     }
 
-    private boolean implementedInterface(Class<T> extensionClass, Class<T> serviceClass) {
+    private boolean isServiceImplementation(Class<T> extensionClass, Class<T> serviceClass) {
         Class<?> currentClass = extensionClass;
         boolean isImplemented = false;
         while (!isImplemented) {
@@ -141,25 +174,10 @@ public class ExtensionLoader<T> {
                 break;
             }
             isImplemented = Arrays.stream(currentClass.getInterfaces()).
-                    anyMatch(oneInterface -> oneInterface == serviceClass);
+                    anyMatch(service -> service == serviceClass);
             currentClass = currentClass.getSuperclass();
         }
         return isImplemented;
-    }
-
-    private void injectExtension(T instance, String type) throws InvocationTargetException, IllegalAccessException {
-        for (Method method : instance.getClass().getMethods()) {
-            if (!isTypeSetter(method)) {
-                continue;
-            }
-            method.invoke(instance, type);
-        }
-    }
-
-    private boolean isTypeSetter(Method method) {
-        return method.getName().startsWith("setType")
-                && Modifier.isPublic(method.getModifiers())
-                && method.getParameterCount() == 1;
     }
 
     private ClassLoader findClassLoader(Class<T> clazz) {

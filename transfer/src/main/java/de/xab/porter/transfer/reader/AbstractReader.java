@@ -2,10 +2,13 @@ package de.xab.porter.transfer.reader;
 
 import de.xab.porter.api.Column;
 import de.xab.porter.api.Result;
+import de.xab.porter.api.annoation.Inject;
 import de.xab.porter.api.dataconnection.DataConnection;
 import de.xab.porter.api.dataconnection.SrcConnection;
 import de.xab.porter.common.util.Loggers;
 import de.xab.porter.transfer.channel.Channel;
+import de.xab.porter.transfer.connector.Connector;
+import de.xab.porter.transfer.exception.ConnectionException;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -17,15 +20,15 @@ import java.util.stream.Collectors;
 /**
  * abstract implementation of reader
  */
-public abstract class AbstractReader implements Reader {
-    protected SrcConnection srcConnection;
+public abstract class AbstractReader<T> implements Reader<T> {
+    protected T connection;
+    private Connector<?> connector;
     private final Logger logger = Loggers.getLogger(this.getClass());
-    private String type;
     private List<Channel> channels;
 
     @Override
     public void read() {
-        SrcConnection srcConnection = this.srcConnection;
+        SrcConnection srcConnection = (SrcConnection) connector.getDataConnection();
         SrcConnection.Properties properties = srcConnection.getProperties();
         Map<String, Column> tableMetaData = new LinkedHashMap<>();
         if (properties.isTable() && properties.isCreate()) {
@@ -40,8 +43,8 @@ public abstract class AbstractReader implements Reader {
     }
 
     @Override
-    public List<Reader> split() {
-        SrcConnection srcConnection = this.srcConnection;
+    public List<Reader<T>> split() {
+        SrcConnection srcConnection = (SrcConnection) connector.getDataConnection();
         SrcConnection.Properties properties = srcConnection.getProperties();
         //todo
         return null;
@@ -76,7 +79,8 @@ public abstract class AbstractReader implements Reader {
      * add src conn properties by source's meta
      */
     protected void initProperties(Map<String, Column> tableMeta) {
-        SrcConnection.Properties properties = this.srcConnection.getProperties();
+        SrcConnection srcConnection = (SrcConnection) connector.getDataConnection();
+        SrcConnection.Properties properties = srcConnection.getProperties();
         if (properties.isTable()) {
             String columns;
             if (!tableMeta.isEmpty()) {
@@ -87,18 +91,36 @@ public abstract class AbstractReader implements Reader {
                 columns = "*";
             }
             String sql = "SELECT " + columns + " FROM "
-                    + this.srcConnection.getSchema() + "." + this.srcConnection.getTable();
+                    + srcConnection.getSchema() + "." + srcConnection.getTable();
             properties.setSql(sql);
         }
     }
 
     @Override
-    public void setDataConnection(DataConnection dataConnection) {
-        this.srcConnection = (SrcConnection) dataConnection;
+    @SuppressWarnings("unchecked")
+    public T connect(DataConnection dataConnection) throws ConnectionException {
+        this.connection = (T) connector.connect(dataConnection);
+        return this.connection;
     }
 
     @Override
-    public SrcConnection getDataConnection() {
-        return this.srcConnection;
+    public void close() {
+        connector.close();
+    }
+
+    @Override
+    public boolean closed() {
+        return connector.closed();
+    }
+
+    @Override
+    public Connector<?> getConnector() {
+        return connector;
+    }
+
+    @Override
+    @Inject
+    public void setConnector(Connector<?> connector) {
+        this.connector = connector;
     }
 }

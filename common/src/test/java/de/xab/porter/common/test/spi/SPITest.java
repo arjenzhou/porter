@@ -14,31 +14,31 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class SPITest {
     @Test
     public void testExists() {
-        MockService impl = ExtensionLoader.getExtensionLoader(MockService.class).loadExtension("impl");
+        MockService impl = ExtensionLoader.getExtensionLoader(MockService.class).loadExtension(null, "impl");
         assertEquals("hello world", impl.mock());
     }
 
     @Test
     public void testNotExists() {
         assertThrows(TypeNotPresentException.class, () ->
-                ExtensionLoader.getExtensionLoader(MockService.class).loadExtension("none"));
+                ExtensionLoader.getExtensionLoader(MockService.class).loadExtension(null, "none"));
     }
 
     @Test
     public void testTypoImpl() {
         assertThrows(IllegalArgumentException.class, () ->
-                ExtensionLoader.getExtensionLoader(MockService.class).loadExtension("typo"));
+                ExtensionLoader.getExtensionLoader(MockService.class).loadExtension(null, "typo"));
     }
 
     @Test
     public void testNoImplemented() {
         assertThrows(IllegalStateException.class, () ->
-                ExtensionLoader.getExtensionLoader(MockService.class).loadExtension("noimpl"));
+                ExtensionLoader.getExtensionLoader(MockService.class).loadExtension(null, "noimpl"));
     }
 
     @Test
     public void testNoneRegistered() {
         assertThrows(TypeNotPresentException.class, () ->
-                ExtensionLoader.getExtensionLoader(UnregisteredService.class).loadExtension("any"));
+                ExtensionLoader.getExtensionLoader(UnregisteredService.class).loadExtension(null, "any"));
     }
 }

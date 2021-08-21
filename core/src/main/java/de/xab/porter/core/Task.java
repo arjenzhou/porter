@@ -23,8 +23,8 @@ import java.util.stream.Collectors;
 public class Task {
     private final Logger logger = Loggers.getLogger(this.getClass());
     private final Context context;
-    private Reader reader;
-    private List<Map.Entry<Writer, Channel>> writers;
+    private Reader<?> reader;
+    private List<Map.Entry<? extends Writer<?>, Channel>> writers;
 
     public Task(Context context) {
         this.context = context;
@@ -32,7 +32,8 @@ public class Task {
 
     public void init() {
         SrcConnection srcConnection = context.getSrcConnection();
-        this.reader = ExtensionLoader.getExtensionLoader(Reader.class).loadExtension(srcConnection.getType());
+        this.reader = ExtensionLoader.getExtensionLoader(Reader.class).
+                loadExtension(srcConnection.getConnectorType(), srcConnection.getType());
         this.reader.setChannels(new ArrayList<>());
         register();
         //todo split
@@ -43,9 +44,10 @@ public class Task {
      */
     public void register() {
         List<SinkConnection> sinkConnections = context.getSinkConnections();
-        this.writers = sinkConnections.stream().
+        writers = sinkConnections.stream().
                 map(sink -> {
-                    Writer writer = ExtensionLoader.getExtensionLoader(Writer.class).loadExtension(sink.getType());
+                    Writer<?> writer = ExtensionLoader.getExtensionLoader(Writer.class).
+                            loadExtension(sink.getConnectorType(), sink.getType());
                     try {
                         writer.connect(sink);
                     } catch (ConnectionException e) {
@@ -53,7 +55,7 @@ public class Task {
                         writer.close();
                     }
                     Channel channel = ExtensionLoader.getExtensionLoader(Channel.class).
-                            loadExtension(this.context.getProperties().getChannel());
+                            loadExtension(null, this.context.getProperties().getChannel());
                     channel.setOnReadListener(writer::write);
                     reader.getChannels().add(channel);
                     return Map.entry(writer, channel);

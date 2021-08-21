@@ -1,18 +1,15 @@
-package de.xab.porter.transfer.connection;
+package de.xab.porter.transfer.connector;
 
 import de.xab.porter.api.dataconnection.DataConnection;
 import de.xab.porter.transfer.exception.ConnectionException;
 
 /**
- * provide connection ability
+ * Connector is used to connect to any data source, usually delegated by {@link Connectable}
+ *
+ * @param <T> the Connection object returned by client
  */
-public interface Connector {
-    /**
-     * connect to data source
-     *
-     * @param dataConnection connection message of data source
-     */
-    void connect(DataConnection dataConnection) throws ConnectionException;
+public interface Connector<T> {
+    T connect(Object... args) throws ConnectionException;
 
     /**
      * close connection to data source
@@ -26,7 +23,8 @@ public interface Connector {
         return true;
     }
 
-    void setDataConnection(DataConnection dataConnection);
-
+    /**
+     * @return the connection properties
+     */
     DataConnection getDataConnection();
 }

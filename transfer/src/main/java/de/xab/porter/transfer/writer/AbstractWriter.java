@@ -1,10 +1,13 @@
 package de.xab.porter.transfer.writer;
 
 import de.xab.porter.api.Result;
+import de.xab.porter.api.annoation.Inject;
 import de.xab.porter.api.dataconnection.DataConnection;
 import de.xab.porter.api.dataconnection.SinkConnection;
 import de.xab.porter.common.util.Loggers;
 import de.xab.porter.transfer.channel.Channel;
+import de.xab.porter.transfer.connector.Connector;
+import de.xab.porter.transfer.exception.ConnectionException;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -15,15 +18,16 @@ import static de.xab.porter.common.enums.SequenceEnum.isFirst;
 /**
  * abstract implementation of reader
  */
-public abstract class AbstractWriter implements Writer {
-    protected SinkConnection sinkConnection;
+public abstract class AbstractWriter<T> implements Writer<T> {
+    protected T connection;
+    private Connector<?> connector;
     private final Logger logger = Loggers.getLogger(this.getClass());
     private Channel channel;
-    private String type;
 
     @Override
     public void write(Result<?> data) {
-        SinkConnection.Properties properties = this.sinkConnection.getProperties();
+        SinkConnection sinkConnection = (SinkConnection) connector.getDataConnection();
+        SinkConnection.Properties properties = sinkConnection.getProperties();
         properties.setQuote(properties.getQuote() == null
                 ? getIdentifierQuote() : properties.getQuote());
         properties.setTableIdentifier(getTableIdentifier());
@@ -31,17 +35,17 @@ public abstract class AbstractWriter implements Writer {
         if (isFirst(data.getSequenceNum())) {
             if (properties.isDrop()) {
                 logger.log(Level.FINE, String.format("dropping table %s %s...",
-                        this.sinkConnection.getType(), this.sinkConnection.getUrl()));
+                        sinkConnection.getType(), sinkConnection.getUrl()));
                 dropTable();
             }
             if (properties.isCreate()) {
                 logger.log(Level.FINE, String.format("creating table %s %s...",
-                        this.sinkConnection.getType(), this.sinkConnection.getUrl()));
+                        sinkConnection.getType(), sinkConnection.getUrl()));
                 createTable(data);
             }
         }
         logger.log(Level.FINE, String.format("writing data to %s %s...",
-                this.sinkConnection.getType(), this.sinkConnection.getUrl()));
+                sinkConnection.getType(), sinkConnection.getUrl()));
         if (data.getSequenceNum() != LAST_IS_EMPTY.getSequenceNum()) {
             doWrite(data);
         }
@@ -51,8 +55,9 @@ public abstract class AbstractWriter implements Writer {
      * get sink data source's table identifier
      */
     protected String getTableIdentifier() {
-        String quote = this.sinkConnection.getProperties().getQuote();
-        return quote + this.sinkConnection.getSchema() + quote + "." + quote + this.sinkConnection.getTable() + quote;
+        SinkConnection sinkConnection = (SinkConnection) connector.getDataConnection();
+        String quote = sinkConnection.getProperties().getQuote();
+        return quote + sinkConnection.getSchema() + quote + "." + quote + sinkConnection.getTable() + quote;
     }
 
     /**
@@ -85,12 +90,30 @@ public abstract class AbstractWriter implements Writer {
     }
 
     @Override
-    public void setDataConnection(DataConnection dataConnection) {
-        this.sinkConnection = (SinkConnection) dataConnection;
+    @SuppressWarnings("unchecked")
+    public T connect(DataConnection dataConnection) throws ConnectionException {
+        this.connection = (T) connector.connect(dataConnection);
+        return this.connection;
     }
 
     @Override
-    public SinkConnection getDataConnection() {
-        return this.sinkConnection;
+    public void close() {
+        connector.close();
+    }
+
+    @Override
+    public boolean closed() {
+        return connector.closed();
+    }
+
+    @Inject
+    @Override
+    public void setConnector(Connector<?> connector) {
+        this.connector = connector;
+    }
+
+    @Override
+    public Connector<?> getConnector() {
+        return connector;
     }
 }
