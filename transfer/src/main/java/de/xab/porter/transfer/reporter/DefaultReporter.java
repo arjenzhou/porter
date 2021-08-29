@@ -7,7 +7,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class DefaultReporter implements Reporter {
-    Logger logger = Loggers.getLogger("REPORTER");
+    private final Logger logger = Loggers.getLogger("REPORTER");
 
     @Override
     public <T> void report(T t) {
