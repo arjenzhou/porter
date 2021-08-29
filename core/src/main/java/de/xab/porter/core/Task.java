@@ -8,6 +8,7 @@ import de.xab.porter.common.util.Loggers;
 import de.xab.porter.transfer.channel.Channel;
 import de.xab.porter.transfer.exception.ConnectionException;
 import de.xab.porter.transfer.reader.Reader;
+import de.xab.porter.transfer.reporter.Reporter;
 import de.xab.porter.transfer.writer.Writer;
 
 import java.util.ArrayList;
@@ -44,6 +45,8 @@ public class Task {
      */
     public void register() {
         List<SinkConnection> sinkConnections = context.getSinkConnections();
+        Reporter reporter = ExtensionLoader.getExtensionLoader(Reporter.class).
+                loadExtension(null, "default");
         writers = sinkConnections.stream().
                 map(sink -> {
                     Writer<?> writer = ExtensionLoader.getExtensionLoader(Writer.class).
@@ -56,7 +59,10 @@ public class Task {
                     }
                     Channel channel = ExtensionLoader.getExtensionLoader(Channel.class).
                             loadExtension(null, this.context.getProperties().getChannel());
-                    channel.setOnReadListener(writer::write);
+                    channel.setOnReadListener(data -> {
+                        writer.write(data);
+                        reporter.report(data);
+                    });
                     reader.getChannels().add(channel);
                     return Map.entry(writer, channel);
                 }).collect(Collectors.toList());

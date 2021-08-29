@@ -12,7 +12,6 @@ import java.util.function.Consumer;
  */
 public class DefaultChannel implements Channel {
     private final BlockingQueue<Result<?>> resultQueue = new LinkedBlockingQueue<>();
-    private String type;
     private Consumer<Result<?>> onReadListener;
 
     public void push(Result<?> result) {
@@ -40,10 +39,5 @@ public class DefaultChannel implements Channel {
     @Override
     public void setOnReadListener(Consumer<Result<?>> listener) {
         this.onReadListener = listener;
-    }
-
-    @Override
-    public void setType(String type) {
-        this.type = type;
     }
 }

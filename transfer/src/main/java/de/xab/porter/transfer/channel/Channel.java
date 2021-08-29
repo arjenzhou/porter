@@ -24,6 +24,4 @@ public interface Channel {
      * register a listener for channel, eligible channel wil notify writer to read data from it
      */
     void setOnReadListener(Consumer<Result<?>> listener);
-
-    void setType(String type);
 }
