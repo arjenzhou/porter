@@ -39,9 +39,7 @@ public class JDBCReader extends AbstractReader<Connection> implements JDBCConnec
         Instant start = Instant.now();
         long batch = 0L;
         try {
-            if (!connection.isReadOnly()) {
-                connection.setReadOnly(true);
-            }
+            connection.setReadOnly(true);
             statement = getStatement();
             resultSet = statement.executeQuery(properties.getSql());
             ResultSetMetaData metaData = resultSet.getMetaData();
