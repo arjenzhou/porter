@@ -56,8 +56,6 @@ public class JDBCReader extends AbstractReader<Connection> implements JDBCConnec
                 }
                 relation.getData().add(row);
                 if (batch % DEFAULT_BATCH_SIZE == 0) {
-                    logger.log(Level.INFO, String.format("read %d rows from %s %s",
-                            batch, srcConnection.getType(), srcConnection.getUrl()));
                     this.pushToChannel(new Result<>(seq++, relation));
                     relation = new Relation(meta);
                 }
@@ -70,7 +68,7 @@ public class JDBCReader extends AbstractReader<Connection> implements JDBCConnec
             Instant end = Instant.now();
             long seconds = Duration.between(start, end).toSeconds();
             logger.log(Level.INFO, String.format(
-                    "read completed. %s rows have been read, cost %s second(s)", batch, seconds));
+                    "%s rows have been read, cost %s second(s)", batch, seconds));
             try {
                 if (resultSet != null) {
                     resultSet.close();

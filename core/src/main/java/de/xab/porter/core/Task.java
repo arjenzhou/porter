@@ -3,6 +3,7 @@ package de.xab.porter.core;
 import de.xab.porter.api.dataconnection.SinkConnection;
 import de.xab.porter.api.dataconnection.SrcConnection;
 import de.xab.porter.api.task.Context;
+import de.xab.porter.api.task.Properties;
 import de.xab.porter.common.spi.ExtensionLoader;
 import de.xab.porter.common.util.Loggers;
 import de.xab.porter.transfer.channel.Channel;
@@ -44,9 +45,10 @@ public class Task {
      * construct relations among reader, writer and its channel, define the action when channel is ready to write
      */
     public void register() {
+        Properties properties = context.getProperties();
         List<SinkConnection> sinkConnections = context.getSinkConnections();
         Reporter reporter = ExtensionLoader.getExtensionLoader(Reporter.class).
-                loadExtension(null, "default");
+                loadExtension(null, properties.getReporter());
         writers = sinkConnections.stream().
                 map(sink -> {
                     Writer<?> writer = ExtensionLoader.getExtensionLoader(Writer.class).

@@ -32,13 +32,9 @@ public abstract class AbstractReader<T> implements Reader<T> {
         SrcConnection.Properties properties = srcConnection.getProperties();
         Map<String, Column> tableMetaData = new LinkedHashMap<>();
         if (properties.isTable() && properties.isCreate()) {
-            logger.log(Level.INFO, String.format("reading table metadata of %s %s...",
-                    srcConnection.getType(), srcConnection.getUrl()));
             tableMetaData = getTableMetaData();
         }
         initProperties(tableMetaData);
-        logger.log(Level.FINE, String.format("%s, reading table data from %s %s...",
-                properties.getSql(), srcConnection.getType(), srcConnection.getUrl()));
         doRead(tableMetaData);
     }
 

@@ -38,7 +38,7 @@ public class JDBCWriter extends AbstractWriter<Connection> implements JDBCConnec
         List<Column> meta = ((Relation) data.getResult()).getMeta();
         logger.log(Level.FINE, String.format("meta of table %s is: \n%s", tableIdentifier, Jsons.toJson(meta)));
         String ddl = getCreateDDL(tableIdentifier, quote, meta);
-        logger.log(Level.INFO, String.format("create table %s: \n\n%s\n", tableIdentifier, ddl));
+        logger.log(Level.INFO, String.format("create table %s: \n%s", tableIdentifier, ddl));
         try (Statement stmt = connection.createStatement()) {
             stmt.executeUpdate(ddl);
         } catch (SQLException e) {

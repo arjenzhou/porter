@@ -5,6 +5,15 @@ package de.xab.porter.api.task;
  */
 public final class Properties {
     private String channel = "default";
+    private String reporter = "default";
+
+    public String getReporter() {
+        return reporter;
+    }
+
+    public void setReporter(String reporter) {
+        this.reporter = reporter;
+    }
 
     public String getChannel() {
         return channel;

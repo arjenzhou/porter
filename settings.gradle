@@ -1,7 +1,6 @@
 rootProject.name = 'porter'
 include 'api'
 include 'common'
-include 'spi'
 include 'transfer'
 include 'core'
 include 'transfer:jdbc'
