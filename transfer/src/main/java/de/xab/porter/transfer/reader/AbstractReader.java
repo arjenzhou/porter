@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 public abstract class AbstractReader<T> implements Reader<T> {
     protected T connection;
     private Connector<?> connector;
-    private final Logger logger = Loggers.getLogger(this.getClass());
     private List<Channel> channels;
 
     @Override

@@ -20,7 +20,7 @@ public final class Jsons {
     }
 
     public static <T> T fromJson(String content, Class<T> clazz) {
-        final T t;
+        T t;
         try {
             t = MAPPER.readValue(content, clazz);
         } catch (JsonProcessingException e) {
@@ -38,7 +38,7 @@ public final class Jsons {
     }
 
     public static String toJson(Object obj) {
-        final String json;
+        String json;
         try {
             json = MAPPER.writeValueAsString(obj);
         } catch (JsonProcessingException e) {

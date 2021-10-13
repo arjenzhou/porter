@@ -48,13 +48,14 @@ public class JDBCReader extends AbstractReader<Connection> implements JDBCConnec
             List<Column> meta = new ArrayList<>(columnMap.values());
             long seq = 0L;
             Relation relation = new Relation(meta);
+            List<List<?>> rows = relation.getData();
             while (resultSet.next()) {
                 batch++;
                 List<Object> row = new ArrayList<>(columnCount);
                 for (int i = 1; i <= columnCount; i++) {
                     row.add(resultSet.getString(i));
                 }
-                relation.getData().add(row);
+                rows.add(row);
                 if (batch % DEFAULT_BATCH_SIZE == 0) {
                     this.pushToChannel(new Result<>(seq++, relation));
                     relation = new Relation(meta);
@@ -179,12 +180,12 @@ public class JDBCReader extends AbstractReader<Connection> implements JDBCConnec
                     == FIRST.getSequenceNum()
                     ? FIRST_AND_LAST.getSequenceNum()
                     : LAST_NOT_EMPTY.getSequenceNum();
+            logger.log(Level.INFO, String.format("read last %d scrap(s) from %s %s",
+                    relation.getData().size(), srcConnection.getType(), srcConnection.getUrl()));
         } else {
             seq = LAST_IS_EMPTY.getSequenceNum();
             relation = new Relation(meta);
         }
-        logger.log(Level.INFO, String.format("read last %d scrap(s) from %s %s",
-                relation.getData().size(), srcConnection.getType(), srcConnection.getUrl()));
         this.pushToChannel(new Result<>(seq, relation));
     }
 
