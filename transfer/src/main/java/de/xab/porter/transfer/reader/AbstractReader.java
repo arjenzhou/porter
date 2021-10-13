@@ -5,7 +5,6 @@ import de.xab.porter.api.Result;
 import de.xab.porter.api.annoation.Inject;
 import de.xab.porter.api.dataconnection.DataConnection;
 import de.xab.porter.api.dataconnection.SrcConnection;
-import de.xab.porter.common.util.Loggers;
 import de.xab.porter.transfer.channel.Channel;
 import de.xab.porter.transfer.connector.Connector;
 import de.xab.porter.transfer.exception.ConnectionException;
@@ -13,8 +12,6 @@ import de.xab.porter.transfer.exception.ConnectionException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
