@@ -1,0 +1,12 @@
+package de.xab.porter.web;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class Porter {
+
+    public static void main(String[] args) {
+        SpringApplication.run(Porter.class, args);
+    }
+}

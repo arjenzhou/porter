@@ -1,7 +1,7 @@
 package de.xab.porter.api.exception;
 
 /**
- * a runtime exception of porter project,
+ * a runtime exception to porter project,
  * suppressed any exception thrown from deeper layer.
  */
 public final class PorterException extends RuntimeException {

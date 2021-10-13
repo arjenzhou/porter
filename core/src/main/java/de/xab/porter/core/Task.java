@@ -68,19 +68,6 @@ public class Task {
                     reader.getChannels().add(channel);
                     return Map.entry(writer, channel);
                 }).collect(Collectors.toList());
-        registerProperties();
-    }
-
-    /**
-     * init source behavior by sinks properties
-     */
-    private void registerProperties() {
-        SrcConnection srcConnection = context.getSrcConnection();
-        SrcConnection.Properties srcConnectionProperties = srcConnection.getProperties();
-        List<SinkConnection> sinkConnections = context.getSinkConnections();
-        srcConnectionProperties.setCreate(sinkConnections.stream().
-                map(SinkConnection::getProperties).
-                anyMatch(SinkConnection.Properties::isCreate));
     }
 
     /**

@@ -23,9 +23,9 @@ public abstract class AbstractWriter<T> implements Writer<T> {
     public void write(Result<?> data) {
         SinkConnection sinkConnection = (SinkConnection) connector.getDataConnection();
         SinkConnection.Properties properties = sinkConnection.getProperties();
-        properties.setQuote(properties.getQuote() == null
-                ? getIdentifierQuote() : properties.getQuote());
-        properties.setTableIdentifier(getTableIdentifier());
+        SinkConnection.Environments environments = sinkConnection.getEnvironments();
+        environments.setQuote(environments.getQuote() == null ? getIdentifierQuote() : environments.getQuote());
+        environments.setTableIdentifier(getTableIdentifier());
 
         if (isFirst(data.getSequenceNum())) {
             if (properties.isDrop()) {
@@ -45,8 +45,10 @@ public abstract class AbstractWriter<T> implements Writer<T> {
      */
     protected String getTableIdentifier() {
         SinkConnection sinkConnection = (SinkConnection) connector.getDataConnection();
-        String quote = sinkConnection.getProperties().getQuote();
-        return quote + sinkConnection.getSchema() + quote + "." + quote + sinkConnection.getTable() + quote;
+        String quote = sinkConnection.getEnvironments().getQuote();
+        String schema = sinkConnection.getSchema() == null
+                ? sinkConnection.getCatalog() : sinkConnection.getSchema();
+        return quote + schema + quote + "." + quote + sinkConnection.getTable() + quote;
     }
 
     /**

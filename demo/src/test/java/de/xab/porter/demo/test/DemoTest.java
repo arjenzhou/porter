@@ -26,6 +26,7 @@ public class DemoTest {
     private final String schema = "PUBLIC";
     private final String table = "mock_table";
     private final String url = String.format("jdbc:h2:mem:%s;DB_CLOSE_DELAY=-1", catalog);
+    private final int batchSize = 500;
     private final Logger logger = Logger.getLogger(this.getClass().getName());
 
     @BeforeEach
@@ -65,6 +66,11 @@ public class DemoTest {
                 catalog(catalog).
                 schema(schema).
                 table(table)).
+                sql("SELECT * FROM `mock_table`").
+                properties(SrcConnection.Properties.builder().
+                        batchSize(batchSize).
+                        readTableMeta(true).
+                        build()).
                 build();
 
         SinkConnection sinkConnection = ((SinkConnection.Builder) new SinkConnection.Builder().
@@ -79,7 +85,6 @@ public class DemoTest {
                         SinkConnection.Properties.builder().
                                 drop(true).
                                 create(true).
-                                allColumns(false).
                                 writeMode(PREPARE_BATCH_MODE).
                                 build()).
                 build();

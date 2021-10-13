@@ -36,4 +36,5 @@ checkstyle {
     showViolations = true
 
     configFile file(rootDir.path + '/codestyle/checkstyle.xml')
+    configProperties = ["suppressionFile": file(rootDir.path + '/codestyle/suppressions.xml')]
 }

@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -35,17 +36,15 @@ public class PostgreSQLWriter extends JDBCWriter {
      * using copy for postgreSQL
      */
     protected void writeInPostgreSQLFileMode(Result<?> data) {
-        SinkConnection.Properties properties = ((SinkConnection) getConnector().getDataConnection()).getProperties();
+        SinkConnection sinkConnection = (SinkConnection) getConnector().getDataConnection();
+        SinkConnection.Environments environments = sinkConnection.getEnvironments();
         Relation relation = (Relation) data.getResult();
         StringReader stringReader = null;
-        String columns = "";
-        if (!properties.isAllColumns()) {
-            columns = relation.getMeta().stream().
-                    map(col -> getColumnIdentifier(col.getName(), properties.getQuote())).
-                    collect(Collectors.joining(", "));
-        }
-        String tableIdentifier = properties.getTableIdentifier();
-        String copySQL = String.format("COPY %s %s FROM STDIN WITH DELIMITER '|'", tableIdentifier, columns);
+        String columns = relation.getMeta().stream().
+                map(col -> getColumnIdentifier(col.getName(), environments.getQuote())).
+                collect(Collectors.joining(", "));
+        String tableIdentifier = environments.getTableIdentifier();
+        String copySQL = String.format("COPY %s (%s) FROM STDIN WITH DELIMITER '|'", tableIdentifier, columns);
         try {
             BaseConnection pgConnection = this.connection.unwrap(BaseConnection.class);
             CopyManager copyManager = new CopyManager(pgConnection);
@@ -57,6 +56,7 @@ public class PostgreSQLWriter extends JDBCWriter {
             long rowCount = copyManager.copyIn(copySQL, new BufferedReader(stringReader));
             logger.log(Level.INFO, String.format("wrote %d rows to table %s", rowCount, tableIdentifier));
         } catch (IOException | SQLException e) {
+            logger.log(Level.SEVERE, String.format("copy data failed.\n%s", copySQL));
             throw new PorterException("copy data failed", e);
         } finally {
             if (stringReader != null) {
@@ -82,7 +82,10 @@ public class PostgreSQLWriter extends JDBCWriter {
     }
 
     @Override
-    protected String getAfterDDL(String tableIdentifier, String quote, List<Column> meta) {
+    protected String getAfterDDL(Map<Short, String> primaryKeyMap,
+                                 String tableIdentifier,
+                                 String quote,
+                                 List<Column> meta) {
         return meta.stream().
                 map(column -> notNullOrBlank(column.getComment())
                         ? ";\nCOMMENT ON COLUMN " + tableIdentifier + "." + quote + column.getName() + quote
@@ -93,7 +96,7 @@ public class PostgreSQLWriter extends JDBCWriter {
     @Override
     protected String getTableIdentifier() {
         SinkConnection sinkConnection = (SinkConnection) getConnector().getDataConnection();
-        String quote = sinkConnection.getProperties().getQuote();
+        String quote = sinkConnection.getEnvironments().getQuote();
         return quote + sinkConnection.getCatalog() + quote + "."
                 + quote + sinkConnection.getSchema() + quote + "."
                 + quote + sinkConnection.getTable() + quote;

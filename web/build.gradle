@@ -1,4 +1,6 @@
 dependencies {
     implementation project(':core')
     implementation project(':transfer:jdbc')
+
+    implementation "org.springframework.boot:spring-boot-starter-web:$springbootStarter"
 }

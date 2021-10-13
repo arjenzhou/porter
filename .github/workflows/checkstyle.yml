@@ -16,6 +16,6 @@ jobs:
           reporter: github-pr-review
           tool_name: checkstyle
           level: error
-          checkstyle_version: 8.44
+          checkstyle_version: 9.0.1
           checkstyle_config: ./codestyle/checkstyle.xml
           fail_on_error: true
