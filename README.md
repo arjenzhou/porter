@@ -109,7 +109,7 @@ Optional, whether drop old table by porter.
 
 ## Porter Web
 
-You can use `porter web` as a daemon server to submitting transfer jobs.
+You can also use `porter web` as a daemon server to submitting transfer jobs.
 
 ### Template input
 
