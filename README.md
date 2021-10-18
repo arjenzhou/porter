@@ -42,7 +42,7 @@ transfer module (e.g. JDBC and HTTP). You can design your channel to handle it.
 Optional, channel is the mailbox that reader and writer exchange their data. Default channel does nothing but transfer
 data, you can do data transform, flow control in your channel.
 
-🔤`reporeter`  
+🔤`reporter`  
 Optional, reporter is used to report task progress. Default reporter just log the batch the task has processed.
 
 ### DataConnection
@@ -81,8 +81,8 @@ The data to be transferred by executing this sql.
 #### Properties
 
 ✅`readTableMeta`  
-Optional, indicates whether read source table meta or not, may cost more performance. `Comment`, `Keys/ Indexes`
-, `Nullable` are got by this.
+Optional, indicates whether read source table meta or not, may cost more performance. `Comment`, `Keys / Indexes`
+, `Nullable` are gotten by this.
 
 🔢`batchSize`  
 Data rows in each batch.
@@ -109,14 +109,15 @@ Optional, whether drop old table by porter.
 
 ## Porter Web
 
-You can use `porter web` as a daemon server to submitting transfer jobs.
+You can also use `porter web` as a daemon server to submitting transfer jobs.
 
 ### Template input
 
-`CURL -X POST 127.0.0.1:8080/transfer`
-
-```json
-{
+```shell
+curl --location --request POST 'localhost:8080/transfer' \
+--header 'Content-Type: application/json' \
+--data-raw \
+`{
   "srcConnection": {
     "connectorType": "hikari",
     "type": "mysql",
@@ -126,7 +127,7 @@ You can use `porter web` as a daemon server to submitting transfer jobs.
     "catalog": null,
     "schema": "porter",
     "table": "source_table",
-    "sql": "SELECT * FROM `porter`.`mock_table`",
+    "sql": "SELECT * FROM `porter`.`source_table`",
     "properties": {
       "batchSize": 20000,
       "readTableMeta": true
@@ -153,7 +154,7 @@ You can use `porter web` as a daemon server to submitting transfer jobs.
     "channel": "default",
     "reporter": "default"
   }
-}
+}`
 ```
 
 ## Contributing
