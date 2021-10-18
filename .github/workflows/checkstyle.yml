@@ -18,5 +18,5 @@ jobs:
           level: error
           checkstyle_version: 9.0.1
           checkstyle_config: ./config/checkstyle/checkstyle.xml
-          properties_file: config/checkstyle
+          properties_file: ./config/checkstyle
           fail_on_error: true
