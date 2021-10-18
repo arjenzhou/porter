@@ -5,7 +5,8 @@
 
 <module name="Checker">
     <module name="SuppressionFilter">
-        <property name="file" value="${suppressionFile}"/>
+        <property name="file" value="${config_loc}/suppressions.xml"/>
+        <property name="optional" value="false"/>
     </module>
     <property name="charset" value="UTF-8"/>
     <property name="fileExtensions" value="java"/>

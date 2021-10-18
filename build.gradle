@@ -14,7 +14,7 @@ buildscript {
 allprojects {
     apply plugin: 'java'
     apply plugin: 'jacoco'
-    apply from: rootDir.path + '/codestyle/checkstyle.gradle'
+    apply from: rootDir.path + '/config/checkstyle/checkstyle.gradle'
 
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11

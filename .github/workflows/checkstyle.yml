@@ -17,6 +17,5 @@ jobs:
           tool_name: checkstyle
           level: error
           checkstyle_version: 9.0.1
-          checkstyle_config: ./codestyle/checkstyle.xml
-          properties_file: ./codestyle/suppressions.xml
+          checkstyle_config: ./config/checkstyle/checkstyle.xml
           fail_on_error: true
