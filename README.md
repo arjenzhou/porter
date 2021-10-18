@@ -81,8 +81,8 @@ The data to be transferred by executing this sql.
 #### Properties
 
 ✅`readTableMeta`  
-Optional, indicates whether read source table meta or not, may cost more performance. `Comment`, `Keys/ Indexes`
-, `Nullable` are got by this.
+Optional, indicates whether read source table meta or not, may cost more performance. `Comment`, `Keys / Indexes`
+, `Nullable` are gotten by this.
 
 🔢`batchSize`  
 Data rows in each batch.
@@ -113,10 +113,11 @@ You can use `porter web` as a daemon server to submitting transfer jobs.
 
 ### Template input
 
-`CURL -X POST 127.0.0.1:8080/transfer`
-
-```json
-{
+```shell
+curl --location --request POST 'localhost:8080/transfer' \
+--header 'Content-Type: application/json' \
+--data-raw \
+`{
   "srcConnection": {
     "connectorType": "hikari",
     "type": "mysql",
@@ -153,7 +154,7 @@ You can use `porter web` as a daemon server to submitting transfer jobs.
     "channel": "default",
     "reporter": "default"
   }
-}
+}`
 ```
 
 ## Contributing
