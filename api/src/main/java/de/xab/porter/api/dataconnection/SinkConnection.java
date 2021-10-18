@@ -5,20 +5,25 @@ package de.xab.porter.api.dataconnection;
  * inner class {@link Properties} describe the behavior how sink table was handled.
  */
 public final class SinkConnection extends DataConnection {
+    private final Environments environments = new Environments();
     private Properties properties;
 
     //constructors
-    public SinkConnection() {
+    private SinkConnection() {
         super();
     }
 
-    protected SinkConnection(Builder builder) {
+    private SinkConnection(Builder builder) {
         super(builder);
         this.properties = builder.properties == null ? new Properties() : builder.properties;
     }
 
     public Properties getProperties() {
         return properties;
+    }
+
+    public Environments getEnvironments() {
+        return environments;
     }
 
     /**
@@ -38,56 +43,11 @@ public final class SinkConnection extends DataConnection {
         }
     }
 
-    /**
-     * properties inner class
-     */
-    public static final class Properties {
-        public static final String PREPARE_BATCH_MODE = "PREPARE_BATCH";
-        public static final String STATEMENT_BATCH_MODE = "STATEMENT_BATCH";
-        public static final String STATEMENT_VALUES_MODE = "STATEMENT_VALUES";
-
-        private String writeMode = "";
-        private boolean allColumns = true;
+    public static final class Environments {
         private String quote;
         private String tableIdentifier;
-        private boolean create;
-        private boolean drop;
 
-        private Properties(Builder builder) {
-            writeMode = builder.writeMode;
-            allColumns = builder.allColumns;
-            quote = builder.quote;
-            tableIdentifier = builder.tableIdentifier;
-            create = builder.create;
-            drop = builder.drop;
-        }
-
-        public Properties() {
-
-        }
-
-        public static Builder builder() {
-            return new Builder();
-        }
-
-        public static String getPrepareBatchMode() {
-            return PREPARE_BATCH_MODE;
-        }
-
-        public static String getStatementBatchMode() {
-            return STATEMENT_BATCH_MODE;
-        }
-
-        public static String getStatementValuesMode() {
-            return STATEMENT_VALUES_MODE;
-        }
-
-        public String getWriteMode() {
-            return writeMode;
-        }
-
-        public boolean isAllColumns() {
-            return allColumns;
+        private Environments() {
         }
 
         public String getQuote() {
@@ -105,6 +65,36 @@ public final class SinkConnection extends DataConnection {
         public void setTableIdentifier(String tableIdentifier) {
             this.tableIdentifier = tableIdentifier;
         }
+    }
+
+    /**
+     * properties inner class
+     */
+    public static final class Properties {
+        public static final String PREPARE_BATCH_MODE = "PREPARED_BATCH";
+        public static final String STATEMENT_BATCH_MODE = "STATEMENT_BATCH";
+        public static final String STATEMENT_VALUES_MODE = "STATEMENT_VALUES";
+
+        private String writeMode = STATEMENT_VALUES_MODE;
+        private boolean create;
+        private boolean drop;
+
+        private Properties(PropertiesBuilder builder) {
+            writeMode = builder.writeMode;
+            create = builder.create;
+            drop = builder.drop;
+        }
+
+        private Properties() {
+        }
+
+        public static PropertiesBuilder builder() {
+            return new PropertiesBuilder();
+        }
+
+        public String getWriteMode() {
+            return writeMode;
+        }
 
         public boolean isCreate() {
             return create;
@@ -117,43 +107,25 @@ public final class SinkConnection extends DataConnection {
         /**
          * properties builder
          */
-        public static final class Builder {
+        public static final class PropertiesBuilder {
             private String writeMode;
-            private boolean allColumns;
-            private String quote;
-            private String tableIdentifier;
             private boolean create;
             private boolean drop;
 
-            private Builder() {
+            private PropertiesBuilder() {
             }
 
-            public Builder writeMode(String writeMode) {
+            public PropertiesBuilder writeMode(String writeMode) {
                 this.writeMode = writeMode;
                 return this;
             }
 
-            public Builder allColumns(boolean allColumns) {
-                this.allColumns = allColumns;
-                return this;
-            }
-
-            public Builder quote(String quote) {
-                this.quote = quote;
-                return this;
-            }
-
-            public Builder tableIdentifier(String tableIdentifier) {
-                this.tableIdentifier = tableIdentifier;
-                return this;
-            }
-
-            public Builder create(boolean create) {
+            public PropertiesBuilder create(boolean create) {
                 this.create = create;
                 return this;
             }
 
-            public Builder drop(boolean drop) {
+            public PropertiesBuilder drop(boolean drop) {
                 this.drop = drop;
                 return this;
             }

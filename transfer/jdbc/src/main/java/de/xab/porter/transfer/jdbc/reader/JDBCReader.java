@@ -33,7 +33,8 @@ public class JDBCReader extends AbstractReader<Connection> implements JDBCConnec
     @Override
     public void doRead(Map<String, Column> columnMap) {
         SrcConnection srcConnection = (SrcConnection) getConnector().getDataConnection();
-        SrcConnection.Properties properties = srcConnection.getProperties();
+        int batchSize = srcConnection.getProperties().getBatchSize();
+        batchSize = batchSize == 0 ? DEFAULT_BATCH_SIZE : batchSize;
         Statement statement = null;
         ResultSet resultSet = null;
         Instant start = Instant.now();
@@ -41,27 +42,29 @@ public class JDBCReader extends AbstractReader<Connection> implements JDBCConnec
         try {
             connection.setReadOnly(true);
             statement = getStatement();
-            resultSet = statement.executeQuery(properties.getSql());
+            resultSet = statement.executeQuery(srcConnection.getSql());
             ResultSetMetaData metaData = resultSet.getMetaData();
             int columnCount = metaData.getColumnCount();
             fillResultSetMeta(columnMap, metaData, columnCount);
             List<Column> meta = new ArrayList<>(columnMap.values());
             long seq = 0L;
             Relation relation = new Relation(meta);
+            List<List<?>> rows = relation.getData();
             while (resultSet.next()) {
                 batch++;
                 List<Object> row = new ArrayList<>(columnCount);
                 for (int i = 1; i <= columnCount; i++) {
                     row.add(resultSet.getString(i));
                 }
-                relation.getData().add(row);
-                if (batch % DEFAULT_BATCH_SIZE == 0) {
-                    this.pushToChannel(new Result<>(seq++, relation));
+                rows.add(row);
+                if (batch % batchSize == 0) {
+                    this.pushToChannel(new Result<>(++seq, relation));
                     relation = new Relation(meta);
+                    rows = relation.getData();
                 }
             }
             //last data container not fill up with batch size
-            pushLastBatch(meta, seq, relation);
+            pushLastBatch(meta, ++seq, relation);
         } catch (SQLException exception) {
             throw new PorterException("read data from JDBC connection failed", exception);
         } finally {
@@ -86,7 +89,6 @@ public class JDBCReader extends AbstractReader<Connection> implements JDBCConnec
     public Map<String, Column> getTableMetaData() {
         SrcConnection srcConnection = (SrcConnection) getConnector().getDataConnection();
         Connection connection = this.connection;
-        //keep insertion order
         Map<String, Column> columnMap = new LinkedHashMap<>();
         try (ResultSet columns = connection.getMetaData().getColumns(srcConnection.getCatalog(),
                 srcConnection.getSchema(), srcConnection.getTable(), null);
@@ -146,28 +148,25 @@ public class JDBCReader extends AbstractReader<Connection> implements JDBCConnec
      */
     private void fillResultSetMeta(Map<String, Column> columnMap,
                                    ResultSetMetaData metaData, int columnCount) throws SQLException {
-        SrcConnection srcConnection = (SrcConnection) getConnector().getDataConnection();
         for (int i = 1; i <= columnCount; i++) {
             String name = metaData.getColumnName(i);
             Column column = columnMap.compute(name, (key, oldValue) ->
                     Objects.requireNonNullElseGet(oldValue, () -> new Column(name)));
-            if (srcConnection.getProperties().isCreate()) {
-                int displaySize = metaData.getColumnDisplaySize(i);
-                boolean signed = metaData.isSigned(i);
-                int precision = metaData.getPrecision(i);
-                int scale = metaData.getScale(i);
-                int columnType = metaData.getColumnType(i);
-                String columnTypeName = metaData.getColumnTypeName(i);
-                String className = metaData.getColumnClassName(i);
-                column.setClassName(className);
-                column.setDisplaySize(displaySize);
-                column.setSigned(signed);
-                column.setPrecision(precision);
-                column.setScale(scale);
-                column.setColumnType(JDBCType.valueOf(columnType));
-                column.setColumnTypeName(columnTypeName);
-                columnMap.put(name, column);
-            }
+            int displaySize = metaData.getColumnDisplaySize(i);
+            boolean signed = metaData.isSigned(i);
+            int precision = metaData.getPrecision(i);
+            int scale = metaData.getScale(i);
+            int columnType = metaData.getColumnType(i);
+            String columnTypeName = metaData.getColumnTypeName(i);
+            String className = metaData.getColumnClassName(i);
+            column.setClassName(className);
+            column.setDisplaySize(displaySize);
+            column.setSigned(signed);
+            column.setPrecision(precision);
+            column.setScale(scale);
+            column.setColumnType(JDBCType.valueOf(columnType));
+            column.setColumnTypeName(columnTypeName);
+            columnMap.put(name, column);
         }
     }
 
@@ -179,12 +178,12 @@ public class JDBCReader extends AbstractReader<Connection> implements JDBCConnec
                     == FIRST.getSequenceNum()
                     ? FIRST_AND_LAST.getSequenceNum()
                     : LAST_NOT_EMPTY.getSequenceNum();
+            logger.log(Level.INFO, String.format("read last %d scrap(s) from %s %s",
+                    relation.getData().size(), srcConnection.getType(), srcConnection.getUrl()));
         } else {
             seq = LAST_IS_EMPTY.getSequenceNum();
             relation = new Relation(meta);
         }
-        logger.log(Level.INFO, String.format("read last %d scrap(s) from %s %s",
-                relation.getData().size(), srcConnection.getType(), srcConnection.getUrl()));
         this.pushToChannel(new Result<>(seq, relation));
     }
 

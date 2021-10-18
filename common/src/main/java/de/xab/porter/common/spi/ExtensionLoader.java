@@ -156,7 +156,7 @@ public class ExtensionLoader<T> {
         }
         line = line.trim();
         if (line.length() > 0) {
-            final String[] split = line.split("=");
+            String[] split = line.split("=");
             if (split.length == 2) {
                 extensionType = split[0];
                 extensionName = split[1];

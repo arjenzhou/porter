@@ -6,14 +6,16 @@ package de.xab.porter.api.dataconnection;
  */
 public final class SrcConnection extends DataConnection {
     private Properties properties;
+    private String sql;
 
     //constructors
-    public SrcConnection() {
+    private SrcConnection() {
         super();
     }
 
-    protected SrcConnection(Builder builder) {
+    private SrcConnection(Builder builder) {
         super(builder);
+        this.sql = builder.sql;
         this.properties = builder.properties == null ? new Properties() : builder.properties;
     }
 
@@ -22,8 +24,8 @@ public final class SrcConnection extends DataConnection {
         return properties;
     }
 
-    public void setProperties(Properties properties) {
-        this.properties = properties;
+    public String getSql() {
+        return sql;
     }
 
     /**
@@ -31,9 +33,15 @@ public final class SrcConnection extends DataConnection {
      */
     public static final class Builder extends AbstractBuilder<SrcConnection> {
         private Properties properties;
+        private String sql;
 
         public Builder properties(Properties properties) {
             this.properties = properties;
+            return this;
+        }
+
+        public Builder sql(String sql) {
+            this.sql = sql;
             return this;
         }
 
@@ -47,66 +55,46 @@ public final class SrcConnection extends DataConnection {
      * properties inner class
      */
     public static final class Properties {
-        private String sql;
-        private boolean table = true;
-        private boolean create;
+        private boolean readTableMeta;
+        private int batchSize;
 
         private Properties(Builder builder) {
-            sql = builder.sql;
-            table = builder.table;
-            create = builder.create;
+            readTableMeta = builder.readTableMeta;
+            batchSize = builder().batchSize;
         }
 
-        public Properties() {
+        private Properties() {
         }
 
         public static Builder builder() {
             return new Builder();
         }
 
-        public String getSql() {
-            return sql;
+        public boolean isReadTableMeta() {
+            return readTableMeta;
         }
 
-        public void setSql(String sql) {
-            this.sql = sql;
-        }
-
-        public boolean isTable() {
-            return table;
-        }
-
-        public boolean isCreate() {
-            return create;
-        }
-
-        public void setCreate(boolean create) {
-            this.create = create;
+        public int getBatchSize() {
+            return batchSize;
         }
 
         /**
          * properties builder
          */
         public static final class Builder {
-            private String sql;
-            private boolean table;
-            private boolean create;
+            private boolean readTableMeta;
+            private int batchSize;
 
             private Builder() {
             }
 
-            public Builder sql(String sql) {
-                this.sql = sql;
+            public Builder readTableMeta(boolean readTableMeta) {
+                this.readTableMeta = readTableMeta;
                 return this;
             }
 
-            public Builder table(boolean table) {
-                this.table = table;
-                return this;
-            }
-
-            public Builder create(boolean create) {
-                this.create = create;
+            public Builder batchSize(int batchSize) {
+                this.batchSize = batchSize;
                 return this;
             }
 

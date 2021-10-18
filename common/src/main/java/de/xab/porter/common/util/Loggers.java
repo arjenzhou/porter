@@ -18,7 +18,6 @@ public final class Loggers {
     }
 
     public static Logger getLogger(Class<?> clazz) {
-        final String name = clazz.getName();
-        return getLogger(name);
+        return getLogger(clazz.getName());
     }
 }
