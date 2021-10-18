@@ -42,7 +42,7 @@ transfer module (e.g. JDBC and HTTP). You can design your channel to handle it.
 Optional, channel is the mailbox that reader and writer exchange their data. Default channel does nothing but transfer
 data, you can do data transform, flow control in your channel.
 
-🔤`reporeter`  
+🔤`reporter`  
 Optional, reporter is used to report task progress. Default reporter just log the batch the task has processed.
 
 ### DataConnection
@@ -126,7 +126,7 @@ You can use `porter web` as a daemon server to submitting transfer jobs.
     "catalog": null,
     "schema": "porter",
     "table": "source_table",
-    "sql": "SELECT * FROM `porter`.`mock_table`",
+    "sql": "SELECT * FROM `porter`.`source_table`",
     "properties": {
       "batchSize": 20000,
       "readTableMeta": true
