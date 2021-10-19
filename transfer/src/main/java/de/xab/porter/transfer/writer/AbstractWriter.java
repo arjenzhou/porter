@@ -66,7 +66,7 @@ public abstract class AbstractWriter<T> implements Writer<T> {
     /**
      * write data to sink data source
      *
-     * @param data data to be write
+     * @param data data to be written
      */
     protected abstract void doWrite(Result<?> data);
 

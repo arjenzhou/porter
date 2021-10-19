@@ -5,7 +5,7 @@ dependencies {
 
     implementation "com.zaxxer:HikariCP:$hikari"
     implementation("ru.yandex.clickhouse:clickhouse-jdbc:$clickhouse") {
-        exclude(group: 'com.fasterxml.jackson.core')
+        exclude group: 'com.fasterxml.jackson.core'
     }
     implementation "mysql:mysql-connector-java:$mysql"
     implementation "org.mariadb.jdbc:mariadb-java-client:$mariadb"
