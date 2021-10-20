@@ -2,7 +2,6 @@ package de.xab.porter.common.util;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import okhttp3.*;
-import okhttp3.logging.HttpLoggingInterceptor;
 
 import java.io.IOException;
 import java.util.Map;
@@ -14,18 +13,16 @@ import java.util.concurrent.TimeUnit;
 public final class Https {
     private static final int CONNECTION_TIMEOUT = 3;
     private static final int SOCKET_TIMEOUT = 5;
+    private static final int MAX_RECURSIVE_DEPTH = 5;
     private static final MediaType JSON = MediaType.Companion.parse("application/json; charset=utf-8");
-    private static final HttpLoggingInterceptor INTERCEPTOR = new HttpLoggingInterceptor();
+    private static final Interceptor INTERCEPTOR = new PorterNetworkInterceptor();
     private static final OkHttpClient CLIENT = new OkHttpClient.Builder().
             connectTimeout(CONNECTION_TIMEOUT, TimeUnit.MINUTES).
             readTimeout(SOCKET_TIMEOUT, TimeUnit.MINUTES).
             writeTimeout(SOCKET_TIMEOUT, TimeUnit.MINUTES).
-            addInterceptor(INTERCEPTOR).
+            addNetworkInterceptor(INTERCEPTOR).
+            followRedirects(false).
             build();
-
-    static {
-        INTERCEPTOR.setLevel(HttpLoggingInterceptor.Level.BASIC);
-    }
 
     private Https() {
     }
@@ -83,9 +80,31 @@ public final class Https {
     }
 
     private static String request(Request request) {
+        return doRequest(request, 0);
+    }
+
+    /**
+     * follow request redirection
+     */
+    private static String doRequest(Request request, int depth) {
+        if (depth > MAX_RECURSIVE_DEPTH) {
+            throw new IllegalStateException("redirect exceed more than max depth");
+        }
         try (Response response = CLIENT.newCall(request).execute();
              ResponseBody responseBody = response.body()) {
             String result = null;
+            if (response.isRedirect()) {
+                String location = response.header("Location");
+                String authorization = request.header("Authorization");
+                if (location != null) {
+                    Request.Builder builder = request.newBuilder().url(location);
+                    if (authorization != null) {
+                        builder.header("Authorization", authorization);
+                    }
+                    request = builder.build();
+                    return doRequest(request, ++depth);
+                }
+            }
             if (responseBody != null) {
                 result = responseBody.string();
             }
