@@ -15,7 +15,7 @@ public class PorterNetworkInterceptor implements Interceptor {
     public Response intercept(Chain chain) throws IOException {
         Request request = chain.request();
         Response response = chain.proceed(request);
-        if (!response.isSuccessful()) {
+        if (!response.isSuccessful() && !response.isRedirect()) {
             logHeader(request, response);
         }
         return response;
