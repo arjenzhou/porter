@@ -1,1 +1,1 @@
-doris=de.xab.porter.transfer.http.connector.DorisConnector
+http=de.xab.porter.transfer.http.connector.HttpConnector
