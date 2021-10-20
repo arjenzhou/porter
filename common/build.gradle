@@ -1,7 +1,13 @@
+plugins {
+    id 'java-library'
+}
 dependencies {
     implementation project(':api')
 
-    implementation "com.fasterxml.jackson.core:jackson-databind:$jackson"
-    implementation "com.squareup.okhttp3:okhttp:$okhttp"
-    implementation "com.squareup.okhttp3:logging-interceptor:$okhttp"
+    api "com.fasterxml.jackson.core:jackson-databind:$jackson"
+    api("com.squareup.okhttp3:okhttp:$okhttp") {
+        exclude group: 'org.jetbrains', module: 'annotations'
+    }
+    api "com.squareup.okhttp3:logging-interceptor:$okhttp"
+    api "org.jetbrains:annotations:$jetbrainsAnnotations"
 }

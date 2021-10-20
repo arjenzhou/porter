@@ -2,7 +2,4 @@ dependencies {
     implementation project(':api')
     implementation project(':common')
     implementation project(':transfer')
-
-    implementation "com.squareup.okhttp3:okhttp:$okhttp"
-    implementation "com.fasterxml.jackson.core:jackson-databind:$jackson"
 }

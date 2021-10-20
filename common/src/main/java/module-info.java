@@ -5,6 +5,7 @@ module de.xab.porter.common {
     requires okhttp3;
     requires kotlin.stdlib;
     requires okhttp3.logging;
+    requires org.jetbrains.annotations;
 
     exports de.xab.porter.common.constant;
     exports de.xab.porter.common.util;
