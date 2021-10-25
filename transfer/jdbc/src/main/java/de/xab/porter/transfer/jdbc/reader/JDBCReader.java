@@ -41,7 +41,7 @@ public class JDBCReader extends AbstractReader<Connection> implements JDBCConnec
         long batch = 0L;
         try {
             connection.setReadOnly(true);
-            statement = getStatement();
+            statement = getStatement(batchSize);
             resultSet = statement.executeQuery(srcConnection.getSql());
             ResultSetMetaData metaData = resultSet.getMetaData();
             int columnCount = metaData.getColumnCount();
@@ -137,9 +137,9 @@ public class JDBCReader extends AbstractReader<Connection> implements JDBCConnec
     /**
      * get JDBC statement, and set properties for it
      */
-    protected Statement getStatement() throws SQLException {
+    protected Statement getStatement(int batchSize) throws SQLException {
         Statement statement = this.connection.createStatement(TYPE_FORWARD_ONLY, CONCUR_READ_ONLY);
-        statement.setFetchSize(DEFAULT_BATCH_SIZE);
+        statement.setFetchSize(batchSize);
         return statement;
     }
 
