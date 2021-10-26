@@ -12,6 +12,8 @@ jobs:
         with:
           java-version: "11"
           distribution: "adopt"
+      - name: Get wrapper
+        run: gradle wrapper
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build with Gradle
