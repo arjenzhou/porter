@@ -43,7 +43,7 @@ public class Task {
                 sequels = splitReader.split();
             } catch (ConnectionException e) {
                 sequels = List.of(srcConnection.getSql());
-                logger.warning("reader connection failed " + e.getCause());
+                logger.warning("reader connection failed " + e.getMessage());
             } finally {
                 splitReader.close();
             }
@@ -74,7 +74,7 @@ public class Task {
                     try {
                         writer.connect(sink);
                     } catch (ConnectionException e) {
-                        logger.severe("writer connection failed" + e.getCause());
+                        logger.severe("writer connection failed" + e.getMessage());
                         writer.close();
                     }
                     Channel channel = ExtensionLoader.getExtensionLoader(Channel.class).
@@ -102,7 +102,7 @@ public class Task {
                     reader.connect(context.getSrcConnection());
                     rows = reader.read(sql);
                 } catch (ConnectionException e) {
-                    logger.severe("reader connection failed " + e.getCause());
+                    logger.severe("reader connection failed " + e.getMessage());
                 } finally {
                     reader.close();
                     countDownLatch.countDown();
