@@ -2,7 +2,7 @@
 
 ![workflow](https://github.com/arjenzhou/porter/actions/workflows/build.yml/badge.svg)
 [![codecov](https://codecov.io/gh/arjenzhou/porter/branch/master/graph/badge.svg?token=WMRO0TVZMG)](https://codecov.io/gh/arjenzhou/porter)
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/arjenzhou/porter)
+![maven](https://img.shields.io/maven-central/v/de.0xab/porter)
 
                             _____
     ________ ______ __________  /______ ________
@@ -24,6 +24,23 @@ Porter is an open-source, universal data-transmission framework.
 Porter runs on Java 11 or above, you may install appropriate JDK before starting.
 
 There is a demo Reader extension in [demo module](./demo/src). You can check it in advance.
+
+Maven
+
+```xml
+
+<dependency>
+    <groupId>de.0xab</groupId>
+    <artifactId>porter-core</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+</dependency>
+```
+
+Gradle
+
+```groovy
+implementation 'de.0xab:porter-core:0.0.1-SNAPSHOT'
+```
 
 ## Properties / Configurations
 

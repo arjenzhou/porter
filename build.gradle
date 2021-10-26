@@ -1,5 +1,5 @@
-group 'de.0xab'
-version "$porter"
+group "$porterGroup"
+version "$porterVersion"
 
 wrapper.gradleVersion = "$gradleWrapper"
 
