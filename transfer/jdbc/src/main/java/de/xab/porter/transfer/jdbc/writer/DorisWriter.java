@@ -25,14 +25,6 @@ public class DorisWriter extends JDBCWriter {
     }
 
     /**
-     * see {@link DorisWriter#createTable}
-     */
-    @Override
-    public void dropTable() {
-        throw new NotSupportedException("do not support dropping table");
-    }
-
-    /**
      * Doris (0.14 for now) has an extremely slow speed of inserting with batch mode.
      */
     @Override

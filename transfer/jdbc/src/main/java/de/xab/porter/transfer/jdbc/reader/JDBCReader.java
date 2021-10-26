@@ -15,7 +15,6 @@ import java.sql.*;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static de.xab.porter.common.constant.Constant.DEFAULT_BATCH_SIZE;
@@ -31,10 +30,10 @@ public class JDBCReader extends AbstractReader<Connection> implements JDBCConnec
     private final Logger logger = Loggers.getLogger(this.getClass());
 
     @Override
-    public void doRead(Map<String, Column> columnMap) {
+    public long doRead(Map<String, Column> columnMap, String sql) {
         SrcConnection srcConnection = (SrcConnection) getConnector().getDataConnection();
         int batchSize = srcConnection.getProperties().getBatchSize();
-        batchSize = batchSize == 0 ? DEFAULT_BATCH_SIZE : batchSize;
+        batchSize = batchSize <= 0 ? DEFAULT_BATCH_SIZE : batchSize;
         Statement statement = null;
         ResultSet resultSet = null;
         Instant start = Instant.now();
@@ -42,7 +41,7 @@ public class JDBCReader extends AbstractReader<Connection> implements JDBCConnec
         try {
             connection.setReadOnly(true);
             statement = getStatement(batchSize);
-            resultSet = statement.executeQuery(srcConnection.getSql());
+            resultSet = statement.executeQuery(sql);
             ResultSetMetaData metaData = resultSet.getMetaData();
             int columnCount = metaData.getColumnCount();
             fillResultSetMeta(columnMap, metaData, columnCount);
@@ -70,7 +69,7 @@ public class JDBCReader extends AbstractReader<Connection> implements JDBCConnec
         } finally {
             Instant end = Instant.now();
             long seconds = Duration.between(start, end).toSeconds();
-            logger.log(Level.INFO, String.format(
+            logger.info(String.format(
                     "%s rows have been read, cost %s second(s)", batch, seconds));
             try {
                 if (resultSet != null) {
@@ -80,9 +79,10 @@ public class JDBCReader extends AbstractReader<Connection> implements JDBCConnec
                     statement.close();
                 }
             } catch (SQLException exception) {
-                logger.log(Level.WARNING, "close JDBC connection failed");
+                logger.warning("close JDBC connection failed");
             }
         }
+        return batch;
     }
 
     @Override
@@ -134,6 +134,71 @@ public class JDBCReader extends AbstractReader<Connection> implements JDBCConnec
         return columnMap;
     }
 
+    @Override
+    protected String getIdentifierQuote() {
+        try {
+            return this.connection.getMetaData().getIdentifierQuoteString();
+        } catch (SQLException e) {
+            throw new PorterException("read quote from JDBC meta data failed", e);
+        }
+    }
+
+    @Override
+    public List<String> split() {
+        SrcConnection srcConnection = (SrcConnection) getConnector().getDataConnection();
+        SrcConnection.Properties properties = srcConnection.getProperties();
+        String sql = srcConnection.getSql();
+        int max = 0;
+        int min = 0;
+        String column;
+        try (Statement statement = getStatement(1)) {
+            String quote = getIdentifierQuote();
+            column = String.format("%s%s%s", quote, properties.getSplitColumn(), quote);
+            String maxSql = String.format("SELECT MAX(%s) FROM (%s) AS MAX_TEMP WHERE 1=1", column, sql);
+            String minSql = String.format("SELECT MIN(%s) FROM (%s) AS MIN_TEMP WHERE 1=1", column, sql);
+            ResultSet maxResultSet = statement.executeQuery(maxSql);
+            if (maxResultSet.next()) {
+                max = maxResultSet.getInt(1);
+            }
+            ResultSet minResultSet = statement.executeQuery(minSql);
+            if (minResultSet.next()) {
+                min = minResultSet.getInt(1);
+            }
+        } catch (SQLException exception) {
+            logger.warning("split failed, reset trunk num to 1. " + exception.getMessage());
+            return List.of(sql);
+        }
+        int range = max - min + 1;
+        if (range == 1) {
+            logger.info("max equals min, reset trunk num to 1");
+            return List.of(sql);
+        }
+        int trunkNumber = properties.getReaderNumber();
+        int step = range / trunkNumber;
+        step = range % trunkNumber == 0 ? step : step + 1;
+        int start = min;
+        logger.info(String.format("%s starts at %s, ends at %s. Step is %s",
+                properties.getSplitColumn(), min, max, step));
+        // max 17, min 2, trunk 5
+        // range 16, step 4
+        // [2, 6], [7, 11], [12, 16], [17, 17]
+        List<String> sequels = new ArrayList<>();
+        for (int i = 0; i < trunkNumber; i++) {
+            int left = start;
+            int right = left + step;
+            if (i == trunkNumber - 1) {
+                right = max;
+            }
+            start = right + 1;
+            String splitSql = String.format("SELECT * FROM (%s) as TEMP WHERE %s >= %s AND %s <= %s",
+                    sql, column, left, column, right);
+            logger.info(splitSql);
+            sequels.add(splitSql);
+        }
+        logger.info("trunk size is " + sequels.size());
+        return sequels;
+    }
+
     /**
      * get JDBC statement, and set properties for it
      */
@@ -178,7 +243,7 @@ public class JDBCReader extends AbstractReader<Connection> implements JDBCConnec
                     == FIRST.getSequenceNum()
                     ? FIRST_AND_LAST.getSequenceNum()
                     : LAST_NOT_EMPTY.getSequenceNum();
-            logger.log(Level.INFO, String.format("read last %d scrap(s) from %s %s",
+            logger.info(String.format("read last %d scrap(s) from %s %s",
                     relation.getData().size(), srcConnection.getType(), srcConnection.getUrl()));
         } else {
             seq = LAST_IS_EMPTY.getSequenceNum();

@@ -2,9 +2,6 @@
 
 ![workflow](https://github.com/arjenzhou/porter/actions/workflows/build.yml/badge.svg)
 [![codecov](https://codecov.io/gh/arjenzhou/porter/branch/master/graph/badge.svg?token=WMRO0TVZMG)](https://codecov.io/gh/arjenzhou/porter)
-![GitHub issues](https://img.shields.io/github/issues-raw/arjenzhou/porter)
-![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/arjenzhou/porter)
-![GitHub all releases](https://img.shields.io/github/downloads/arjenzhou/porter/total)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/arjenzhou/porter)
 
                             _____
@@ -87,6 +84,15 @@ Optional, indicates whether read source table meta or not, may cost more perform
 🔢`batchSize`  
 Data rows in each batch.
 
+✅`split`  
+Optional, whether split SQL among readers.
+
+🔤`splitColum`  
+Optional, split data by this column.
+
+🔢`readerNumber`  
+Optional, split SQL to readers of this number.
+
 ### SinkConnection
 
 #### Properties
@@ -104,12 +110,9 @@ All data type may have its default or exclusive option.
 ✅`create`  
 Optional, whether create sink table by porter.
 
-✅`drop`  
-Optional, whether drop old table by porter.
-
 ## Porter Web
 
-You can also use `porter web` as a daemon server to submitting transfer jobs.
+You can also use `porter web` as a daemon server to submitting transfer jobs for debug.
 
 ### Template input
 
@@ -129,8 +132,11 @@ curl --location --request POST 'localhost:8080/transfer' \
     "table": "source_table",
     "sql": "SELECT * FROM `porter`.`source_table`",
     "properties": {
-      "batchSize": 20000,
-      "readTableMeta": true
+      "batchSize": 5000,
+      "readTableMeta": true,
+      "split": true,
+      "splitColumn" : "source_key",
+      "readerNumber" : 5
     }
   },
   "sinkConnections": [
@@ -145,8 +151,7 @@ curl --location --request POST 'localhost:8080/transfer' \
       "table": "sink_table",
       "properties": {
         "writeMode": "default",
-        "create": true,
-        "drop": true
+        "create": true
       }
     }
   ],

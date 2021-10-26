@@ -23,7 +23,7 @@ public abstract class AbstractReader<T> implements Reader<T> {
     private List<Channel> channels;
 
     @Override
-    public void read() {
+    public long read(String sql) {
         SrcConnection srcConnection = (SrcConnection) connector.getDataConnection();
         SrcConnection.Properties properties = srcConnection.getProperties();
         //keep insertion order
@@ -32,26 +32,26 @@ public abstract class AbstractReader<T> implements Reader<T> {
         if (properties.isReadTableMeta() && Strings.notNullOrBlank(srcConnection.getTable())) {
             tableMetaData = getTableMetaData();
         }
-        doRead(tableMetaData);
+        return doRead(tableMetaData, sql);
     }
 
     @Override
-    public List<Reader<T>> split() {
-        SrcConnection srcConnection = (SrcConnection) connector.getDataConnection();
-        SrcConnection.Properties properties = srcConnection.getProperties();
-        //todo
-        return null;
-    }
+    public abstract List<String> split();
 
     /**
      * read data from source
      */
-    protected abstract void doRead(Map<String, Column> columnMap);
+    protected abstract long doRead(Map<String, Column> columnMap, String sql);
 
     /**
-     * read meta data of source
+     * read metadata of source
      */
     protected abstract Map<String, Column> getTableMetaData();
+
+    /**
+     * read keyword quote from data source
+     */
+    protected abstract String getIdentifierQuote();
 
     @Override
     public void pushToChannel(Result<?> result) {

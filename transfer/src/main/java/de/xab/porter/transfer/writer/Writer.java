@@ -18,11 +18,6 @@ public interface Writer<T> extends Connectable<T> {
      */
     void createTable(Result<?> data);
 
-    /**
-     * drop out-dated table before create sink table
-     */
-    void dropTable();
-
     Channel getChannel();
 
     void setChannel(Channel channel);
