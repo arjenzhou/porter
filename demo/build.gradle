@@ -1,7 +1,7 @@
 dependencies {
     implementation project(':common')
     implementation project(':core')
-    implementation project(':transfer:jdbc')
+    implementation project(':transfer:transfer-jdbc')
 
     implementation "com.h2database:h2:$h2"
 }

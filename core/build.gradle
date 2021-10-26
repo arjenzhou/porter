@@ -6,6 +6,6 @@ dependencies {
     api project(':api')
     api project(':transfer')
     implementation project(':common')
-    implementation project(':transfer:jdbc')
-    implementation project(':transfer:http')
+    implementation project(':transfer:transfer-jdbc')
+    implementation project(':transfer:transfer-http')
 }
