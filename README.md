@@ -32,14 +32,14 @@ Maven
 <dependency>
     <groupId>de.0xab</groupId>
     <artifactId>porter-core</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
 </dependency>
 ```
 
 Gradle
 
 ```groovy
-implementation 'de.0xab:porter-core:0.0.1-SNAPSHOT'
+implementation 'de.0xab:porter-core:0.0.1'
 ```
 
 ## Properties / Configurations
