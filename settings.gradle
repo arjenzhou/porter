@@ -1,4 +1,4 @@
-rootProject.name = 'porter'
+rootProject.name = "$porterArtifact"
 include 'api'
 include 'common'
 include 'transfer'

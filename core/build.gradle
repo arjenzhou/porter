@@ -1,5 +1,7 @@
 plugins {
     id 'java-library'
+    id 'maven-publish'
+    id 'signing'
 }
 
 dependencies {
@@ -8,4 +10,67 @@ dependencies {
     implementation project(':common')
     implementation project(':transfer:jdbc')
     implementation project(':transfer:http')
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+javadoc {
+    options.addStringOption("charset", "UTF-8")
+    if (JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption('html5', true)
+    }
+}
+
+publishing {
+    publications {
+        porterCore(MavenPublication) {
+            artifactId = "$porterArtifact"
+            from components.java
+            pom {
+                name = "$porterArtifact-core"
+                description = 'porter core module'
+                url = 'https://github.com/arjenzhou/porter'
+                licenses {
+                    license {
+                        name = 'The MIT License'
+                        url = 'https://github.com/arjenzhou/porter/blob/master/LICENSE'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'arjenzhou'
+                        name = 'Zhou Yang'
+                        email = 'zhouyang.zy@outlook.com'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git@github.com:arjenzhou/porter.git'
+                    developerConnection = 'scm:git:git@github.com:arjenzhou/porter.git'
+                    url = 'https://github.com/arjenzhou/porter'
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            name = "OSSRH"
+            if (project.version.toString().endsWith("-SNAPSHOT")) {
+                url = "https://s01.oss.sonatype.org/content/repositories/snapshots"
+            } else {
+                url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            }
+            credentials {
+                username = findProperty("ossrhUsername") ?: System.getenv("OSSRH_USERNAME")
+                password = findProperty("ossrhPassword") ?: System.getenv("OSSRH_PASSWORD")
+            }
+        }
+    }
+}
+
+signing {
+    sign(publishing.publications.porterCore)
 }
