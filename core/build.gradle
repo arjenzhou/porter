@@ -27,7 +27,9 @@ javadoc {
 publishing {
     publications {
         porterCore(MavenPublication) {
+            groupId = "$porterGroup"
             artifactId = "$porterArtifact"
+            version = "$porterVersion"
             from components.java
             pom {
                 name = "$porterArtifact-core"
@@ -58,7 +60,7 @@ publishing {
     repositories {
         maven {
             name = "OSSRH"
-            if (project.version.toString().endsWith("-SNAPSHOT")) {
+            if ("$porterVersion".endsWith("-SNAPSHOT")) {
                 url = "https://s01.oss.sonatype.org/content/repositories/snapshots"
             } else {
                 url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
