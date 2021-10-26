@@ -14,7 +14,6 @@ import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -31,11 +30,11 @@ public class HikariConnector implements Connector<Connection> {
         this.dataConnection = (DataConnection) args[0];
         String jdbcUrl = (String) args[1];
         try {
-            logger.log(Level.INFO, String.format("connecting to %s %s...",
+            logger.info(String.format("connecting to %s %s...",
                     this.dataConnection.getType(), this.dataConnection.getUrl()));
             this.hikariDataSource = genDataSource(this.dataConnection, jdbcUrl);
             this.connection = hikariDataSource.getConnection();
-            logger.log(Level.INFO, String.format("connected to %s %s...",
+            logger.info(String.format("connected to %s %s...",
                     this.dataConnection.getType(), this.dataConnection.getUrl()));
             return this.connection;
         } catch (HikariPool.PoolInitializationException | SQLException exception) {
@@ -46,7 +45,7 @@ public class HikariConnector implements Connector<Connection> {
 
     @Override
     public void close() {
-        logger.log(Level.INFO, String.format("closing connection to %s...", this.dataConnection.getUrl()));
+        logger.info(String.format("closing connection to %s...", this.dataConnection.getUrl()));
         try {
             Connection connection = this.connection;
             if (connection != null && closed()) {
@@ -85,7 +84,7 @@ public class HikariConnector implements Connector<Connection> {
         try (InputStream resourceAsStream = this.getClass().getClassLoader().getResourceAsStream("hikari.properties")) {
             props.load(resourceAsStream);
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "hikari property file not found");
+            logger.severe("hikari property file not found");
         }
         HikariConfig hikariConfig = new HikariConfig(props);
         hikariConfig.setJdbcUrl(jdbcUrl);

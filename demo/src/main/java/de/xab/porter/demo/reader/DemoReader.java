@@ -11,4 +11,9 @@ public class DemoReader extends JDBCReader {
     public String getJDBCUrl(DataConnection dataConnection) {
         return String.format("jdbc:h2:mem:%s", dataConnection.getCatalog());
     }
+
+    @Override
+    protected String getIdentifierQuote() {
+        return "`";
+    }
 }

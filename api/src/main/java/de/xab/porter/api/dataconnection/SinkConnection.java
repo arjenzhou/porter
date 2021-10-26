@@ -77,12 +77,10 @@ public final class SinkConnection extends DataConnection {
 
         private String writeMode = STATEMENT_VALUES_MODE;
         private boolean create;
-        private boolean drop;
 
         private Properties(PropertiesBuilder builder) {
             writeMode = builder.writeMode;
             create = builder.create;
-            drop = builder.drop;
         }
 
         private Properties() {
@@ -100,17 +98,12 @@ public final class SinkConnection extends DataConnection {
             return create;
         }
 
-        public boolean isDrop() {
-            return drop;
-        }
-
         /**
          * properties builder
          */
         public static final class PropertiesBuilder {
             private String writeMode;
             private boolean create;
-            private boolean drop;
 
             private PropertiesBuilder() {
             }
@@ -122,11 +115,6 @@ public final class SinkConnection extends DataConnection {
 
             public PropertiesBuilder create(boolean create) {
                 this.create = create;
-                return this;
-            }
-
-            public PropertiesBuilder drop(boolean drop) {
-                this.drop = drop;
                 return this;
             }
 

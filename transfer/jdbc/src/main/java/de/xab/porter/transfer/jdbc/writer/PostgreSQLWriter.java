@@ -15,7 +15,6 @@ import java.io.StringReader;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -54,9 +53,9 @@ public class PostgreSQLWriter extends JDBCWriter {
                     collect(Collectors.joining("\n"));
             stringReader = new StringReader(csv);
             long rowCount = copyManager.copyIn(copySQL, new BufferedReader(stringReader));
-            logger.log(Level.INFO, String.format("wrote %d rows to table %s", rowCount, tableIdentifier));
+            logger.info(String.format("wrote %d rows to table %s", rowCount, tableIdentifier));
         } catch (IOException | SQLException e) {
-            logger.log(Level.SEVERE, String.format("copy data failed.\n%s", copySQL));
+            logger.severe(String.format("copy data failed.\n%s", copySQL));
             throw new PorterException("copy data failed", e);
         } finally {
             if (stringReader != null) {
@@ -67,7 +66,7 @@ public class PostgreSQLWriter extends JDBCWriter {
 
     @Override
     protected String getCreate(String tableIdentifier) {
-        return String.format("CREATE TABLE %s (\n", tableIdentifier);
+        return String.format("CREATE TABLE IF NOT EXISTS %s (\n", tableIdentifier);
     }
 
     @Override

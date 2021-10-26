@@ -17,7 +17,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -37,13 +36,13 @@ public class JDBCWriter extends AbstractWriter<Connection> implements JDBCConnec
         String tableIdentifier = getTableIdentifier();
         String quote = environments.getQuote();
         List<Column> meta = ((Relation) data.getResult()).getMeta();
-        logger.log(Level.FINE, String.format("meta of table %s is: \n%s", tableIdentifier, Jsons.toJson(meta)));
+        logger.fine(String.format("meta of table %s is: \n%s", tableIdentifier, Jsons.toJson(meta)));
         String ddl = getCreateDDL(tableIdentifier, quote, meta);
-        logger.log(Level.INFO, String.format("create table %s: \n%s", tableIdentifier, ddl));
+        logger.info(String.format("create table %s: \n%s", tableIdentifier, ddl));
         try (Statement stmt = connection.createStatement()) {
             stmt.executeUpdate(ddl);
         } catch (SQLException e) {
-            logger.log(Level.INFO, String.format("table %s create failed", tableIdentifier));
+            logger.info(String.format("table %s create failed", tableIdentifier));
             throw new PorterException("create table failed", e);
         }
     }
@@ -89,9 +88,9 @@ public class JDBCWriter extends AbstractWriter<Connection> implements JDBCConnec
             //DO NOT DEPEND ON THIS
             //returned by JDBC client, may not be accurate
             int rowCount = stmt.executeUpdate(sqlBuilder.toString());
-            logger.log(Level.INFO, String.format("wrote %d rows to table %s", rowCount, tableIdentifier));
+            logger.info(String.format("wrote %d rows to table %s", rowCount, tableIdentifier));
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, sqlBuilder.toString());
+            logger.severe(sqlBuilder.toString());
             throw new PorterException("write data failed", e);
         }
     }
@@ -118,7 +117,7 @@ public class JDBCWriter extends AbstractWriter<Connection> implements JDBCConnec
             }
             int[] result = statement.executeBatch();
             long rowCount = Arrays.stream(result).summaryStatistics().getSum();
-            logger.log(Level.INFO, String.format("wrote %d rows to table %s", rowCount, tableIdentifier));
+            logger.info(String.format("wrote %d rows to table %s", rowCount, tableIdentifier));
         } catch (SQLException e) {
             throw new PorterException("write data failed", e);
         }
@@ -150,7 +149,7 @@ public class JDBCWriter extends AbstractWriter<Connection> implements JDBCConnec
             }
             int[] result = statement.executeBatch();
             long rowCount = Arrays.stream(result).summaryStatistics().getSum();
-            logger.log(Level.INFO, String.format("wrote %d rows to table %s", rowCount, tableIdentifier));
+            logger.info(String.format("wrote %d rows to table %s", rowCount, tableIdentifier));
         } catch (SQLException e) {
             throw new PorterException("write data failed", e);
         }
@@ -161,18 +160,6 @@ public class JDBCWriter extends AbstractWriter<Connection> implements JDBCConnec
      */
     protected void writeInDefaultMode(Result<?> data) {
         writeInValueMode((Relation) data.getResult());
-    }
-
-    @Override
-    public void dropTable() {
-        String tableIdentifier = getTableIdentifier();
-        try (Statement stmt = connection.createStatement()) {
-            String ddl = String.format("DROP TABLE IF EXISTS %s", tableIdentifier);
-            logger.log(Level.INFO, String.format("drop table %s: %s", tableIdentifier, ddl));
-            stmt.executeUpdate(ddl);
-        } catch (SQLException e) {
-            throw new PorterException("drop table failed", e);
-        }
     }
 
     @Override

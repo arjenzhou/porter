@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 
 import java.sql.*;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static de.xab.porter.api.dataconnection.SinkConnection.Properties.PREPARE_BATCH_MODE;
@@ -50,7 +49,7 @@ public class DemoTest {
             int i = statement.executeUpdate(sql);
             assert i == rows;
         } catch (SQLException exception) {
-            logger.log(Level.SEVERE, exception.getMessage());
+            logger.severe(exception.getMessage());
         }
     }
 
@@ -69,6 +68,9 @@ public class DemoTest {
                 sql("SELECT * FROM `mock_table`").
                 properties(SrcConnection.Properties.builder().
                         batchSize(batchSize).
+                        split(true).
+                        readerNumber(2).
+                        splitColumn("id").
                         readTableMeta(true).
                         build()).
                 build();
@@ -83,7 +85,6 @@ public class DemoTest {
                 table(table + "_tmp")).
                 properties(
                         SinkConnection.Properties.builder().
-                                drop(true).
                                 create(true).
                                 writeMode(PREPARE_BATCH_MODE).
                                 build()).
@@ -105,12 +106,12 @@ public class DemoTest {
                 for (int i = 0; i < columnCount; i++) {
                     res.append(resultSet.getString(i + 1)).append(" ");
                 }
-                logger.log(Level.INFO, res.toString());
+                logger.info(res.toString());
                 row++;
             }
             return row;
         } catch (SQLException exception) {
-            logger.log(Level.SEVERE, exception.getMessage());
+            logger.severe(exception.getMessage());
         }
         return 0;
     }

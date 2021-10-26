@@ -16,7 +16,6 @@ import okhttp3.Credentials;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -24,7 +23,6 @@ public class DorisWriter extends AbstractWriter<Void> {
     private final Logger logger = Loggers.getLogger(this.getClass());
     private Map<String, String> header;
     private String url;
-    private long taskId;
 
     /**
      * [
@@ -34,7 +32,6 @@ public class DorisWriter extends AbstractWriter<Void> {
      */
     @Override
     protected void doWrite(Result<?> data) {
-        header.put("label", "porter_" + data.getSequenceNum() + "_" + taskId);
         SinkConnection sinkConnection = (SinkConnection) getConnector().getDataConnection();
         SinkConnection.Environments environments = sinkConnection.getEnvironments();
         String tableIdentifier = environments.getTableIdentifier();
@@ -52,7 +49,7 @@ public class DorisWriter extends AbstractWriter<Void> {
             throw new IllegalStateException(String.format("insert failed: %s", dorisResponseBody.getMessage()));
         }
         Long rows = dorisResponseBody.getNumberLoadedRows();
-        logger.log(Level.INFO, String.format("wrote %d rows to table %s", rows, tableIdentifier));
+        logger.info(String.format("wrote %d rows to table %s", rows, tableIdentifier));
     }
 
     /**
@@ -60,7 +57,6 @@ public class DorisWriter extends AbstractWriter<Void> {
      */
     @Override
     public Void connect(DataConnection dataConnection) {
-        this.taskId = System.currentTimeMillis();
         HttpConnector dorisConnector = (HttpConnector) getConnector();
         SinkConnection sinkConnection = (SinkConnection) dataConnection;
         dorisConnector.connect(sinkConnection);
@@ -86,10 +82,5 @@ public class DorisWriter extends AbstractWriter<Void> {
     @Override
     public void createTable(Result<?> data) {
         throw new NotSupportedException("do not support creating table");
-    }
-
-    @Override
-    public void dropTable() {
-        throw new NotSupportedException("do not support dropping table");
     }
 }

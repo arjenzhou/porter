@@ -28,9 +28,6 @@ public abstract class AbstractWriter<T> implements Writer<T> {
         environments.setTableIdentifier(getTableIdentifier());
 
         if (isFirst(data.getSequenceNum())) {
-            if (properties.isDrop()) {
-                dropTable();
-            }
             if (properties.isCreate()) {
                 createTable(data);
             }

@@ -56,11 +56,17 @@ public final class SrcConnection extends DataConnection {
      */
     public static final class Properties {
         private boolean readTableMeta;
+        private boolean split;
+        private String splitColumn;
+        private int readerNumber;
         private int batchSize;
 
         private Properties(Builder builder) {
             readTableMeta = builder.readTableMeta;
-            batchSize = builder().batchSize;
+            batchSize = builder.batchSize;
+            split = builder.split;
+            splitColumn = builder.splitColumn;
+            readerNumber = builder.readerNumber;
         }
 
         private Properties() {
@@ -78,11 +84,26 @@ public final class SrcConnection extends DataConnection {
             return batchSize;
         }
 
+        public String getSplitColumn() {
+            return splitColumn;
+        }
+
+        public int getReaderNumber() {
+            return readerNumber;
+        }
+
+        public boolean isSplit() {
+            return split;
+        }
+
         /**
          * properties builder
          */
         public static final class Builder {
             private boolean readTableMeta;
+            private boolean split;
+            private String splitColumn;
+            private int readerNumber;
             private int batchSize;
 
             private Builder() {
@@ -95,6 +116,21 @@ public final class SrcConnection extends DataConnection {
 
             public Builder batchSize(int batchSize) {
                 this.batchSize = batchSize;
+                return this;
+            }
+
+            public Builder split(boolean split) {
+                this.split = split;
+                return this;
+            }
+
+            public Builder splitColumn(String splitColumn) {
+                this.splitColumn = splitColumn;
+                return this;
+            }
+
+            public Builder readerNumber(int readerNumber) {
+                this.readerNumber = readerNumber;
                 return this;
             }
 

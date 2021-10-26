@@ -11,7 +11,8 @@ import java.util.function.Consumer;
  * default channel
  */
 public class DefaultChannel implements Channel {
-    private final BlockingQueue<Result<?>> resultQueue = new LinkedBlockingQueue<>();
+    //avoid blocking when queue is empty
+    private final BlockingQueue<Result<?>> resultQueue = new LinkedBlockingQueue<>(2);
     private Consumer<Result<?>> onReadListener;
 
     public void push(Result<?> result) {

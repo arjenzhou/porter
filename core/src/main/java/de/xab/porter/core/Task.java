@@ -15,7 +15,7 @@ import de.xab.porter.transfer.writer.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
+import java.util.concurrent.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 public class Task {
     private final Logger logger = Loggers.getLogger(this.getClass());
     private final Context context;
-    private Reader<?> reader;
+    private Map<? extends Reader<?>, String> readers;
     private List<Map.Entry<? extends Writer<?>, Channel>> writers;
 
     public Task(Context context) {
@@ -34,17 +34,35 @@ public class Task {
 
     public void init() {
         SrcConnection srcConnection = context.getSrcConnection();
-        this.reader = ExtensionLoader.getExtensionLoader(Reader.class).
+        Reader<?> splitReader = ExtensionLoader.getExtensionLoader(Reader.class).
                 loadExtension(srcConnection.getConnectorType(), srcConnection.getType());
-        this.reader.setChannels(new ArrayList<>());
-        register();
-        //todo split
+        List<String> sequels;
+        if (srcConnection.getProperties().isSplit()) {
+            try {
+                splitReader.connect(srcConnection);
+                sequels = splitReader.split();
+            } catch (ConnectionException e) {
+                sequels = List.of(srcConnection.getSql());
+                logger.warning("reader connection failed " + e.getCause());
+            } finally {
+                splitReader.close();
+            }
+            this.readers = sequels.stream().
+                    map(sql -> Map.<Reader<?>, String>entry(
+                            ExtensionLoader.getExtensionLoader(Reader.class).
+                                    loadExtension(srcConnection.getConnectorType(), srcConnection.getType()), sql)).
+                    collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        } else {
+            this.readers = Map.of(splitReader, srcConnection.getSql());
+        }
+        this.readers.forEach((reader, sql) -> reader.setChannels(new ArrayList<>()));
+        registerChannel();
     }
 
     /**
      * construct relations among reader, writer and its channel, define the action when channel is ready to write
      */
-    public void register() {
+    public void registerChannel() {
         Properties properties = context.getProperties();
         List<SinkConnection> sinkConnections = context.getSinkConnections();
         Reporter reporter = ExtensionLoader.getExtensionLoader(Reporter.class).
@@ -56,7 +74,7 @@ public class Task {
                     try {
                         writer.connect(sink);
                     } catch (ConnectionException e) {
-                        logger.log(Level.WARNING, "writer connection failed" + e.getCause());
+                        logger.severe("writer connection failed" + e.getCause());
                         writer.close();
                     }
                     Channel channel = ExtensionLoader.getExtensionLoader(Channel.class).
@@ -65,7 +83,7 @@ public class Task {
                         writer.write(data);
                         reporter.report(data);
                     });
-                    reader.getChannels().add(channel);
+                    readers.forEach((reader, sql) -> reader.getChannels().add(channel));
                     return Map.entry(writer, channel);
                 }).collect(Collectors.toList());
     }
@@ -74,14 +92,44 @@ public class Task {
      * start a transmission task
      */
     public void start() {
+        CountDownLatch countDownLatch = new CountDownLatch(readers.size());
+        ExecutorService executorService = Executors.newFixedThreadPool(readers.size());
+        List<Future<Long>> futures = new ArrayList<>(readers.size());
+        readers.forEach((reader, sql) -> {
+            Future<Long> future = executorService.submit(() -> {
+                long rows = 0L;
+                try {
+                    reader.connect(context.getSrcConnection());
+                    rows = reader.read(sql);
+                } catch (ConnectionException e) {
+                    logger.severe("reader connection failed " + e.getCause());
+                } finally {
+                    reader.close();
+                    countDownLatch.countDown();
+                }
+                return rows;
+            });
+            futures.add(future);
+        });
+
         try {
-            reader.connect(context.getSrcConnection());
-            reader.read();
-        } catch (ConnectionException e) {
-            logger.log(Level.WARNING, "reader connection failed " + e.getCause());
+            countDownLatch.await();
+            long totalRows = futures.stream().mapToLong(future -> {
+                try {
+                    return future.get();
+                } catch (InterruptedException e) {
+                    logger.severe("future is interrupted, " + e.getMessage());
+                } catch (ExecutionException e) {
+                    logger.severe("future execution failed, " + e.getMessage());
+                }
+                return 0L;
+            }).sum();
+            logger.info("task execution over, total read " + totalRows + " rows.");
+        } catch (InterruptedException e) {
+            logger.warning("reader interrupted");
         } finally {
-            reader.close();
             writers.forEach(writer -> writer.getKey().close());
+            executorService.shutdown();
         }
     }
 }

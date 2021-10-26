@@ -13,12 +13,12 @@ public interface Reader<T> extends Connectable<T> {
     /**
      * split source table into pieces
      */
-    List<Reader<T>> split();
+    List<String> split();
 
     /**
      * read data from reader
      */
-    void read();
+    long read(String sql);
 
     /**
      * push data to channels registered to
