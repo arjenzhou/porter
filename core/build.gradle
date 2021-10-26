@@ -28,7 +28,7 @@ publishing {
     publications {
         porterCore(MavenPublication) {
             groupId = "$porterGroup"
-            artifactId = "$porterArtifact"
+            artifactId = "$porterArtifact-core"
             version = "$porterVersion"
             from components.java
             pom {
