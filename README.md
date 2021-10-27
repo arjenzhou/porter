@@ -1,8 +1,9 @@
 # Porter
 
-![workflow](https://github.com/arjenzhou/porter/actions/workflows/build.yml/badge.svg)
+[![workflow](https://github.com/arjenzhou/porter/actions/workflows/build.yml/badge.svg)](https://github.com/arjenzhou/porter/actions)
+![Java](https://img.shields.io/badge/Java-%5E11-blue)
 [![codecov](https://codecov.io/gh/arjenzhou/porter/branch/master/graph/badge.svg?token=WMRO0TVZMG)](https://codecov.io/gh/arjenzhou/porter)
-![maven](https://img.shields.io/maven-central/v/de.0xab/porter)
+[![maven](https://img.shields.io/maven-central/v/de.0xab/porter-core)](https://search.maven.org/search?q=a:porter-core)
 
                             _____
     ________ ______ __________  /______ ________
@@ -23,10 +24,6 @@ Porter is an open-source, universal data-transmission framework.
 
 Porter runs on Java 11 or above, you may install appropriate JDK before starting.
 
-There is a demo Reader extension in [demo module](./demo/src). You can check it in advance.
-
-Maven
-
 ```xml
 
 <dependency>
@@ -36,11 +33,11 @@ Maven
 </dependency>
 ```
 
-Gradle
-
 ```groovy
 implementation 'de.0xab:porter-core:0.0.1'
 ```
+
+There is a demo extension in [demo module](./demo/src). You can check it in advance.
 
 ## Properties / Configurations
 
@@ -95,7 +92,7 @@ The data to be transferred by executing this sql.
 #### Properties
 
 ✅`readTableMeta`  
-Optional, indicates whether read source table meta or not, may cost more performance. `Comment`, `Keys / Indexes`
+Optional, indicates whether read source table meta or not, may cost more performance. `Comment`, `Keys/Indexes`
 , `Nullable` are gotten by this.
 
 🔢`batchSize`  
@@ -180,6 +177,8 @@ curl --location --request POST 'localhost:8080/transfer' \
 ```
 
 ## Contributing
+
+Run `gradlew check` before committing your code.
 
 See [CONTRIBUTING](CONTRIBUTING.md) for details on submitting patches and the contribution workflow.
 
