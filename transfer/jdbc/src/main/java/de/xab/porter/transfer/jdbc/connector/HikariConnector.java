@@ -45,10 +45,13 @@ public class HikariConnector implements Connector<Connection> {
 
     @Override
     public void close() {
-        logger.info(String.format("closing connection to %s...", this.dataConnection.getUrl()));
+        DataConnection dataConnection = this.dataConnection;
+        if (dataConnection != null) {
+            logger.info(String.format("closing connection to %s...", dataConnection.getUrl()));
+        }
         try {
             Connection connection = this.connection;
-            if (connection != null && closed()) {
+            if (connection != null && !connection.isClosed()) {
                 connection.close();
             }
             HikariDataSource datasource = this.hikariDataSource;
@@ -62,6 +65,9 @@ public class HikariConnector implements Connector<Connection> {
 
     @Override
     public boolean closed() {
+        if (this.connection == null) {
+            return true;
+        }
         boolean closed;
         try {
             closed = this.connection.isClosed();

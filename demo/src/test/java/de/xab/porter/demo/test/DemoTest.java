@@ -69,7 +69,7 @@ public class DemoTest {
                 properties(SrcConnection.Properties.builder().
                         batchSize(batchSize).
                         split(true).
-                        readerNumber(2).
+                        readerNumber(5).
                         splitColumn("id").
                         readTableMeta(true).
                         build()).

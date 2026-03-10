@@ -148,6 +148,11 @@ public class JDBCReader extends AbstractReader<Connection> implements JDBCConnec
         SrcConnection srcConnection = (SrcConnection) getConnector().getDataConnection();
         SrcConnection.Properties properties = srcConnection.getProperties();
         String sql = srcConnection.getSql();
+        int trunkNumber = properties.getReaderNumber();
+        if (trunkNumber <= 1) {
+            logger.info("reader number is not greater than 1, reset trunk num to 1");
+            return List.of(sql);
+        }
         int max = 0;
         int min = 0;
         String column;
@@ -173,22 +178,14 @@ public class JDBCReader extends AbstractReader<Connection> implements JDBCConnec
             logger.info("max equals min, reset trunk num to 1");
             return List.of(sql);
         }
-        int trunkNumber = properties.getReaderNumber();
-        int step = range / trunkNumber;
-        step = range % trunkNumber == 0 ? step : step + 1;
+        int step = (range + trunkNumber - 1) / trunkNumber;
         int start = min;
         logger.info(String.format("%s starts at %s, ends at %s. Step is %s",
                 properties.getSplitColumn(), min, max, step));
-        // max 17, min 2, trunk 5
-        // range 16, step 4
-        // [2, 6], [7, 11], [12, 16], [17, 17]
         List<String> sequels = new ArrayList<>();
-        for (int i = 0; i < trunkNumber; i++) {
+        for (int i = 0; i < trunkNumber && start <= max; i++) {
             int left = start;
-            int right = left + step;
-            if (i == trunkNumber - 1) {
-                right = max;
-            }
+            int right = Math.min(left + step - 1, max);
             start = right + 1;
             String splitSql = String.format("SELECT * FROM (%s) as TEMP WHERE %s >= %s AND %s <= %s",
                     sql, column, left, column, right);
