@@ -13,6 +13,7 @@ import de.xab.porter.transfer.jdbc.connector.JDBCConnector;
 import de.xab.porter.transfer.writer.AbstractWriter;
 
 import java.sql.*;
+import java.time.temporal.TemporalAccessor;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -81,7 +82,7 @@ public class JDBCWriter extends AbstractWriter<Connection> implements JDBCConnec
         sqlBuilder.append("VALUES\n");
         sqlBuilder.append(relation.getData().stream().
                 map(row -> "(" + row.stream().
-                        map(Object::toString).
+                        map(this::getSqlLiteral).
                         collect(Collectors.joining(", ")) + ")").
                 collect(Collectors.joining(", \n")));
         try (Statement stmt = this.connection.createStatement()) {
@@ -111,7 +112,7 @@ public class JDBCWriter extends AbstractWriter<Connection> implements JDBCConnec
         try (Statement statement = this.connection.createStatement()) {
             for (List<?> row : relation.getData()) {
                 String insert = prefix + row.stream().
-                        map(Object::toString).
+                        map(this::getSqlLiteral).
                         collect(Collectors.joining(", ")) + ")";
                 statement.addBatch(insert);
             }
@@ -159,7 +160,7 @@ public class JDBCWriter extends AbstractWriter<Connection> implements JDBCConnec
      * write in default mode, each data source has its implements
      */
     protected void writeInDefaultMode(Result<?> data) {
-        writeInValueMode((Relation) data.getResult());
+        writeInPrepareBatchMode((Relation) data.getResult());
     }
 
     @Override
@@ -270,6 +271,23 @@ public class JDBCWriter extends AbstractWriter<Connection> implements JDBCConnec
             default:
                 return columnTypeName;
         }
+    }
+
+    private String getSqlLiteral(Object value) {
+        if (value == null) {
+            return "NULL";
+        }
+        if (value instanceof Number || value instanceof Boolean) {
+            return value.toString();
+        }
+        if (value instanceof java.util.Date || value instanceof TemporalAccessor) {
+            return "'" + escapeSql(value.toString()) + "'";
+        }
+        return "'" + escapeSql(value.toString()) + "'";
+    }
+
+    private String escapeSql(String value) {
+        return value.replace("'", "''");
     }
 
     @Override

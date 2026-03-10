@@ -79,7 +79,7 @@ public final class SinkConnection extends DataConnection {
         private boolean create;
 
         private Properties(PropertiesBuilder builder) {
-            writeMode = builder.writeMode;
+            writeMode = builder.writeMode == null ? STATEMENT_VALUES_MODE : builder.writeMode;
             create = builder.create;
         }
 

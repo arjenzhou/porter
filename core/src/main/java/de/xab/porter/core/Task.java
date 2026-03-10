@@ -74,14 +74,20 @@ public class Task {
                     try {
                         writer.connect(sink);
                     } catch (ConnectionException e) {
-                        logger.severe("writer connection failed" + e.getMessage());
+                        logger.severe("writer connection failed " + e.getMessage());
                         writer.close();
+                        throw new IllegalStateException(String.format(
+                                "unable to connect sink %s %s", sink.getType(), sink.getUrl()), e);
                     }
                     Channel channel = ExtensionLoader.getExtensionLoader(Channel.class).
                             loadExtension(null, this.context.getProperties().getChannel());
+                    writer.setChannel(channel);
+                    Object writeLock = new Object();
                     channel.setOnReadListener(data -> {
-                        writer.write(data);
-                        reporter.report(data);
+                        synchronized (writeLock) {
+                            writer.write(data);
+                            reporter.report(data);
+                        }
                     });
                     readers.forEach((reader, sql) -> reader.getChannels().add(channel));
                     return Map.entry(writer, channel);
@@ -118,6 +124,7 @@ public class Task {
                 try {
                     return future.get();
                 } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                     logger.severe("future is interrupted, " + e.getMessage());
                 } catch (ExecutionException e) {
                     logger.severe("future execution failed, " + e.getMessage());
@@ -126,6 +133,7 @@ public class Task {
             }).sum();
             logger.info("task execution over, total read " + totalRows + " rows.");
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             logger.warning("reader interrupted");
         } finally {
             writers.forEach(writer -> writer.getKey().close());
